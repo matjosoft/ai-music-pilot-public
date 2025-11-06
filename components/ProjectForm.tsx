@@ -3,28 +3,12 @@
 import { useState } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
 import { ProjectFormData } from '@/types';
+import GenreSelector from './GenreSelector';
 
 interface ProjectFormProps {
   onGenerate: (formData: ProjectFormData) => void;
   isLoading: boolean;
 }
-
-const GENRES = [
-  'Pop',
-  'Rock',
-  'Hip Hop',
-  'Electronic',
-  'Indie',
-  'Folk',
-  'Jazz',
-  'Classical',
-  'R&B',
-  'Country',
-  'Metal',
-  'Reggae',
-  'Blues',
-  'Alternative',
-];
 
 const MOODS = [
   'Happy',
@@ -61,7 +45,7 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
     projectName: '',
     mode: 'simple',
     simpleDescription: '',
-    genre: GENRES[0],
+    genre: 'Pop',
     mood: MOODS[0],
     theme: '',
     targetAudience: '',
@@ -114,18 +98,10 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
           <label htmlFor="genre" className="block text-sm font-medium text-gray-700">
             Genre
           </label>
-          <select
-            id="genre"
-            value={formData.genre}
-            onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-          >
-            {GENRES.map((genre) => (
-              <option key={genre} value={genre}>
-                {genre}
-              </option>
-            ))}
-          </select>
+          <GenreSelector
+            value={formData.genre || ''}
+            onChange={(genre) => setFormData({ ...formData, genre })}
+          />
         </div>
 
         <div className="space-y-2">
