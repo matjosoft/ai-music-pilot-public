@@ -1,22 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateAIResponse } from '@/lib/ai-client';
-import { SYSTEM_PROMPT, generateProjectPrompt } from '@/lib/prompts';
+import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt } from '@/lib/prompts';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { vision, genre, mood, tempo, wordDensity } = body;
+    const { mode, vision, genre, mood, tempo, wordDensity, title, artistName } = body;
 
-    // Validate input
-    if (!vision || !genre || !mood || !tempo) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+    let userPrompt: string;
+
+    // Handle artist mode
+    if (mode === 'artist') {
+      // Validate artist mode input
+      if (!title || !artistName) {
+        return NextResponse.json(
+          { error: 'Missing required fields: title and artistName are required for artist mode' },
+          { status: 400 }
+        );
+      }
+
+      // Generate user prompt for artist mode
+      userPrompt = generateArtistModePrompt(title, artistName, wordDensity || 'medium');
+    } else {
+      // Handle custom mode (existing logic)
+      // Validate input
+      if (!vision || !genre || !mood || !tempo) {
+        return NextResponse.json(
+          { error: 'Missing required fields' },
+          { status: 400 }
+        );
+      }
+
+      // Generate user prompt
+      userPrompt = generateProjectPrompt(vision, genre, mood, tempo, wordDensity || 'medium');
     }
-
-    // Generate user prompt
-    const userPrompt = generateProjectPrompt(vision, genre, mood, tempo, wordDensity || 'medium');
 
     // Call AI API (supports both Anthropic and OpenAI)
     const response = await generateAIResponse({
