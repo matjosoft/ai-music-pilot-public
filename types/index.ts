@@ -1,4 +1,5 @@
 export type GenerationMode = 'simple' | 'custom';
+export type WordDensity = 'extreme-sparse' | 'low' | 'medium' | 'high';
 
 export interface ProjectFormData {
   projectName: string;
@@ -10,6 +11,7 @@ export interface ProjectFormData {
   theme?: string;
   targetAudience?: string;
   additionalNotes?: string;
+  wordDensity?: WordDensity;
 }
 
 export interface SongStructure {

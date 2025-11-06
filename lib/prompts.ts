@@ -34,14 +34,25 @@ export function generateProjectPrompt(
   vision: string,
   genre: string,
   mood: string,
-  tempo: string
+  tempo: string,
+  wordDensity: string = 'medium'
 ): string {
+  const densityInstructions = {
+    'extreme-sparse': 'Use EXTREMELY sparse lyrics with very few words per line (2-4 words). Focus on powerful, impactful single words or short phrases. Maximum economy of language. Leave lots of space between phrases.',
+    'low': 'Use sparse, concise lyrics with minimal words (3-6 words per line). Keep it simple and direct. Short, punchy phrases.',
+    'medium': 'Use moderate lyric density with balanced phrasing (5-10 words per line). Natural conversational flow.',
+    'high': 'Use dense, detailed lyrics with longer phrases and more words per line (10-15 words per line). Rich descriptions and elaborate phrasing.'
+  };
+
+  const densityGuidance = densityInstructions[wordDensity as keyof typeof densityInstructions] || densityInstructions.medium;
+
   return `Create a music project for Suno AI Custom Mode based on:
 
 Vision: ${vision}
 Genre: ${genre}
 Mood: ${mood}
 Tempo: ${tempo}
+Word Density: ${wordDensity.toUpperCase()} - ${densityGuidance}
 
 Generate:
 
@@ -49,6 +60,7 @@ Generate:
    - Use [Intro], [Verse 1], [Chorus], [Verse 2], [Bridge], [Outro]
    - Add [Instrumental] or other instructions where appropriate
    - Write creative, emotional lyrics matching the vision
+   - IMPORTANT: Follow the word density guideline strictly for the verses and chorus
    - Each section should have a metatag describing instrumentation
    - Example format:
      [Intro: acoustic guitar, soft piano]
@@ -85,18 +97,30 @@ Respond in JSON format:
 export function regenerateLyricsPrompt(
   currentLyrics: string,
   style: string,
-  instructions?: string
+  instructions?: string,
+  wordDensity?: string
 ): string {
+  let densityInstruction = '';
+  if (wordDensity) {
+    const densityInstructions = {
+      'extreme-sparse': 'Use EXTREMELY sparse lyrics with very few words per line (2-4 words). Focus on powerful, impactful single words or short phrases.',
+      'low': 'Use sparse, concise lyrics with minimal words (3-6 words per line). Keep it simple and direct.',
+      'medium': 'Use moderate lyric density with balanced phrasing (5-10 words per line).',
+      'high': 'Use dense, detailed lyrics with longer phrases (10-15 words per line).'
+    };
+    densityInstruction = `\nWord Density: ${wordDensity.toUpperCase()} - ${densityInstructions[wordDensity as keyof typeof densityInstructions] || densityInstructions.medium}`;
+  }
+
   return `Regenerate the complete lyrics for this music project while maintaining consistency with the style.
 
 Current Lyrics:
 ${currentLyrics}
 
-Style: ${style}
+Style: ${style}${densityInstruction}
 
 ${instructions ? `User Instructions: ${instructions}` : ''}
 
-Generate new lyrics with the same structure (same sections) but different content. Keep the metatags format consistent with the style.
+Generate new lyrics with the same structure (same sections) but different content. Keep the metatags format consistent with the style.${wordDensity ? ' Follow the word density guideline strictly for verses and chorus.' : ''}
 
 Respond in JSON format:
 {

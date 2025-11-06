@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { anthropic, MODEL, MAX_TOKENS } from '@/lib/anthropic';
+import { generateAIResponse } from '@/lib/ai-client';
 import { SYSTEM_PROMPT, regenerateLyricsPrompt } from '@/lib/prompts';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { currentLyrics, style, instructions } = body;
+    const { currentLyrics, style, instructions, wordDensity } = body;
 
     // Validate input
     if (!currentLyrics || !style) {
@@ -16,32 +16,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate user prompt
-    const userPrompt = regenerateLyricsPrompt(currentLyrics, style, instructions);
+    const userPrompt = regenerateLyricsPrompt(currentLyrics, style, instructions, wordDensity);
 
-    // Call Claude API
-    const message = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
+    // Call AI API (supports both Anthropic and OpenAI)
+    const response = await generateAIResponse({
+      systemPrompt: SYSTEM_PROMPT,
+      userPrompt,
     });
-
-    // Extract response text
-    const responseText = message.content[0].type === 'text'
-      ? message.content[0].text
-      : '';
 
     // Parse JSON response
     let parsedResponse;
     try {
-      parsedResponse = JSON.parse(responseText);
+      parsedResponse = JSON.parse(response.content);
     } catch (parseError) {
-      console.error('Failed to parse Claude response:', responseText);
+      console.error('Failed to parse AI response:', response.content);
       return NextResponse.json(
         { error: 'Invalid response format from AI' },
         { status: 500 }
