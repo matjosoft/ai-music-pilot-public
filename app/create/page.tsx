@@ -4,13 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import ProjectForm from '@/components/ProjectForm';
+import ArtistModeForm from '@/components/ArtistModeForm';
 import CustomModeOutput from '@/components/CustomModeOutput';
 import SunoInstructions from '@/components/SunoInstructions';
-import { ProjectFormData, GenerationResponse } from '@/types';
+import { ProjectFormData, GenerationResponse, GenerationMode } from '@/types';
 import { generateId } from '@/lib/utils';
 import { saveProject } from '@/lib/storage';
 
 export default function CreatePage() {
+  const [selectedMode, setSelectedMode] = useState<GenerationMode>('custom');
   const [isLoading, setIsLoading] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [result, setResult] = useState<GenerationResponse | null>(null);
@@ -22,18 +24,34 @@ export default function CreatePage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      let requestBody;
+
+      if (formData.mode === 'artist') {
+        // Artist mode: send title and artistName
+        requestBody = {
+          mode: 'artist',
+          title: formData.projectName,
+          artistName: formData.artistName,
+          wordDensity: formData.wordDensity || 'medium',
+        };
+      } else {
+        // Custom mode: send vision, genre, mood, tempo
+        requestBody = {
+          mode: 'custom',
           vision: formData.simpleDescription,
           genre: formData.genre,
           mood: formData.mood,
           tempo: formData.theme || 'Medium',
           wordDensity: formData.wordDensity || 'medium',
-        }),
+        };
+      }
+
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -179,9 +197,50 @@ export default function CreatePage() {
             </div>
           )}
 
+          {/* Mode Selector */}
+          <div className="mb-6 bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Creation Mode</h2>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setSelectedMode('custom')}
+                className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all ${
+                  selectedMode === 'custom'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <div className="text-center">
+                  <div className="font-bold">Custom Mode</div>
+                  <div className="text-sm mt-1 opacity-90">
+                    Full control over genre, mood, and vision
+                  </div>
+                </div>
+              </button>
+              <button
+                onClick={() => setSelectedMode('artist')}
+                className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all ${
+                  selectedMode === 'artist'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <div className="text-center">
+                  <div className="font-bold">Artist Mode</div>
+                  <div className="text-sm mt-1 opacity-90">
+                    Just title & artist - AI does the rest
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Form */}
           <div className="mb-8">
-            <ProjectForm onGenerate={handleGenerate} isLoading={isLoading} />
+            {selectedMode === 'custom' ? (
+              <ProjectForm onGenerate={handleGenerate} isLoading={isLoading} />
+            ) : (
+              <ArtistModeForm onGenerate={handleGenerate} isLoading={isLoading} />
+            )}
           </div>
 
           {/* Results */}

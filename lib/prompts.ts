@@ -192,3 +192,73 @@ Respond in JSON format:
   "reasoning": "why this style works for these lyrics"
 }`;
 }
+
+export function generateArtistModePrompt(
+  title: string,
+  artistName: string,
+  wordDensity: string = 'medium'
+): string {
+  const densityInstructions = {
+    'extreme-sparse': 'Use EXTREMELY sparse lyrics with very few words per line (2-4 words). Focus on powerful, impactful single words or short phrases. Maximum economy of language. Leave lots of space between phrases.',
+    'low': 'Use sparse, concise lyrics with minimal words (3-6 words per line). Keep it simple and direct. Short, punchy phrases.',
+    'medium': 'Use moderate lyric density with balanced phrasing (5-10 words per line). Natural conversational flow.',
+    'high': 'Use dense, detailed lyrics with longer phrases and more words per line (10-15 words per line). Rich descriptions and elaborate phrasing.'
+  };
+
+  const densityGuidance = densityInstructions[wordDensity as keyof typeof densityInstructions] || densityInstructions.medium;
+
+  return `Create a music project for Suno AI Custom Mode in the style of "${artistName}" with the song title "${title}".
+
+Your task is to:
+1. Analyze the musical style, genre, and characteristics of "${artistName}"
+2. Create a song that authentically captures their artistic style
+3. Generate lyrics and instrumentation that would fit "${artistName}"'s typical sound
+
+IMPORTANT INSTRUCTIONS:
+- Study the typical genre, mood, tempo, and production style of "${artistName}"
+- Write lyrics that match their lyrical themes, storytelling style, and vocabulary
+- Use instrumentation and production techniques characteristic of "${artistName}"'s music
+- Match the vocal style (range, delivery, emotion) typical of this artist
+- Create a style description that captures the essence of "${artistName}"'s sound
+
+Word Density: ${wordDensity.toUpperCase()} - ${densityGuidance}
+
+Generate:
+
+1. LYRICS: Complete song lyrics with metatag structure
+   - Use [Intro], [Verse 1], [Chorus], [Verse 2], [Bridge], [Outro]
+   - Add [Instrumental] or other instructions where appropriate
+   - Write lyrics that sound like they could be from "${artistName}"
+   - IMPORTANT: Follow the word density guideline strictly for the verses and chorus
+   - Each section should have a metatag describing instrumentation typical of this artist
+   - Example format:
+     [Intro: acoustic guitar, soft piano]
+     [Instrumental]
+
+     [Verse 1: acoustic guitar, gentle vocals]
+     Lyrics here...
+
+2. STYLE: Comma-separated style description for "Style of Music" field
+   - Genre and subgenre characteristic of "${artistName}"
+   - Specific instruments this artist typically uses
+   - Vocal style matching "${artistName}" (gender, voice type, delivery)
+   - Technical elements and production style of this artist
+   - Tempo and key if relevant to their style
+   - Mood and atmosphere typical of "${artistName}"'s music
+
+3. SECTIONS: Break down the structure with metatags that reflect this artist's typical arrangements
+
+Respond in JSON format:
+{
+  "lyrics": "Complete lyrics with metatags in the style of ${artistName}...",
+  "style": "comma, separated, style, elements, matching, ${artistName}...",
+  "sections": [
+    {
+      "section": "Intro",
+      "metatag": "[Intro: instruments typical of ${artistName}]",
+      "lyrics": "[Instrumental]"
+    }
+  ],
+  "suggestions": "Tips for capturing ${artistName}'s style in Suno..."
+}`;
+}

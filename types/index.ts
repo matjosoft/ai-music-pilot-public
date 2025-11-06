@@ -1,4 +1,4 @@
-export type GenerationMode = 'simple' | 'custom';
+export type GenerationMode = 'simple' | 'custom' | 'artist';
 export type WordDensity = 'extreme-sparse' | 'low' | 'medium' | 'high';
 
 export interface ProjectFormData {
@@ -6,6 +6,7 @@ export interface ProjectFormData {
   mode: GenerationMode;
   simpleDescription?: string;
   artistReference?: string;
+  artistName?: string;
   genre?: string;
   mood?: string;
   theme?: string;
