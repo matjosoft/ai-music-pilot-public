@@ -62,9 +62,13 @@ export async function generateAIResponse(options: GenerateOptions): Promise<AIRe
     const openai = getOpenAIClient();
     const model = process.env.OPENAI_MODEL || 'gpt-4-turbo-preview';
 
-    const completion = await openai.chat.completions.create({
+    // GPT-5 and newer models use max_completion_tokens instead of max_tokens
+    const useMaxCompletionTokens = model.startsWith('gpt-5') ||
+                                    model.startsWith('o1') ||
+                                    model.startsWith('o3');
+
+    const completionParams: OpenAI.Chat.ChatCompletionCreateParams = {
       model,
-      max_tokens: maxTokens,
       messages: [
         {
           role: 'system',
@@ -76,7 +80,16 @@ export async function generateAIResponse(options: GenerateOptions): Promise<AIRe
         },
       ],
       response_format: { type: 'json_object' },
-    });
+    };
+
+    // Add the appropriate token limit parameter
+    if (useMaxCompletionTokens) {
+      completionParams.max_completion_tokens = maxTokens;
+    } else {
+      completionParams.max_tokens = maxTokens;
+    }
+
+    const completion = await openai.chat.completions.create(completionParams);
 
     const content = completion.choices[0]?.message?.content || '';
     return { content };

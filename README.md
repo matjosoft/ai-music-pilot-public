@@ -51,6 +51,10 @@ Get your API key from: https://platform.openai.com/api-keys
 - `gpt-4-turbo-preview` (recommended)
 - `gpt-4`
 - `gpt-3.5-turbo`
+- `gpt-5-preview` (supports newer API features)
+- `o1`, `o3` (reasoning models)
+
+**Note:** GPT-5 and newer models (o1, o3) automatically use the `max_completion_tokens` parameter instead of `max_tokens`.
 
 ### 4. Run the Development Server
 
