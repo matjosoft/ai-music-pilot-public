@@ -5,7 +5,7 @@ import { SYSTEM_PROMPT, generateProjectPrompt } from '@/lib/prompts';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { vision, genre, mood, tempo } = body;
+    const { vision, genre, mood, tempo, wordDensity } = body;
 
     // Validate input
     if (!vision || !genre || !mood || !tempo) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate user prompt
-    const userPrompt = generateProjectPrompt(vision, genre, mood, tempo);
+    const userPrompt = generateProjectPrompt(vision, genre, mood, tempo, wordDensity || 'medium');
 
     // Call AI API (supports both Anthropic and OpenAI)
     const response = await generateAIResponse({

@@ -49,6 +49,13 @@ const TEMPOS = [
   'Very Fast (140+ BPM)',
 ];
 
+const WORD_DENSITIES = [
+  { value: 'extreme-sparse', label: 'Extreme Sparse', description: '2-4 words per line' },
+  { value: 'low', label: 'Low', description: '3-6 words per line' },
+  { value: 'medium', label: 'Medium', description: '5-10 words per line' },
+  { value: 'high', label: 'High', description: '10-15 words per line' },
+];
+
 export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps) {
   const [formData, setFormData] = useState<ProjectFormData>({
     projectName: '',
@@ -59,6 +66,7 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
     theme: '',
     targetAudience: '',
     additionalNotes: '',
+    wordDensity: 'medium',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -137,6 +145,27 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="wordDensity" className="block text-sm font-medium text-gray-700">
+          Word Density
+        </label>
+        <select
+          id="wordDensity"
+          value={formData.wordDensity}
+          onChange={(e) => setFormData({ ...formData, wordDensity: e.target.value as any })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+        >
+          {WORD_DENSITIES.map((density) => (
+            <option key={density.value} value={density.value}>
+              {density.label} - {density.description}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-500">
+          Controls how many words are used per line in the verses. Extreme sparse uses very few words for powerful impact, while high density creates detailed, elaborate lyrics.
+        </p>
       </div>
 
       <div className="space-y-2">

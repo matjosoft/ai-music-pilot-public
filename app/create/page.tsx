@@ -15,6 +15,7 @@ export default function CreatePage() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [result, setResult] = useState<GenerationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [currentWordDensity, setCurrentWordDensity] = useState<string>('medium');
 
   const handleGenerate = async (formData: ProjectFormData) => {
     setIsLoading(true);
@@ -31,6 +32,7 @@ export default function CreatePage() {
           genre: formData.genre,
           mood: formData.mood,
           tempo: formData.theme || 'Medium',
+          wordDensity: formData.wordDensity || 'medium',
         }),
       });
 
@@ -53,6 +55,7 @@ export default function CreatePage() {
       };
 
       setResult(generationResponse);
+      setCurrentWordDensity(formData.wordDensity || 'medium');
 
       // Save to localStorage
       const projectId = generateId();
@@ -84,6 +87,7 @@ export default function CreatePage() {
           currentLyrics: result.songs[0].lyrics,
           style: result.songs[0].style,
           instructions: '',
+          wordDensity: currentWordDensity,
         }),
       });
 

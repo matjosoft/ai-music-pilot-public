@@ -5,7 +5,7 @@ import { SYSTEM_PROMPT, regenerateLyricsPrompt } from '@/lib/prompts';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { currentLyrics, style, instructions } = body;
+    const { currentLyrics, style, instructions, wordDensity } = body;
 
     // Validate input
     if (!currentLyrics || !style) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate user prompt
-    const userPrompt = regenerateLyricsPrompt(currentLyrics, style, instructions);
+    const userPrompt = regenerateLyricsPrompt(currentLyrics, style, instructions, wordDensity);
 
     // Call AI API (supports both Anthropic and OpenAI)
     const response = await generateAIResponse({
