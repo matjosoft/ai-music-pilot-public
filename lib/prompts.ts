@@ -11,20 +11,28 @@ METATAG RULES:
 3. Examples:
    - [Intro: acoustic guitar, soft vocals]
    - [Verse 1: stripped back, vocals and piano only]
-   - [Chorus: full band, electric guitar, powerful drums, energetic vocals]
+   - [Chorus: full band, electric guitar, powerful drums, energetic vocals, backing vocals]
    - [Bridge: guitar solo, no vocals, heavy drums]
    - [Outro: fade out, ambient synths]
 
 4. Use descriptions like:
    - Instruments: "acoustic guitar", "electric bass", "808 drums", "synth pads"
-   - Vocal instructions: "no vocals", "whispered vocals", "powerful vocals", "harmonies"
+   - Vocal instructions: "no vocals", "whispered vocals", "powerful vocals", "harmonies", "backing vocals"
    - Dynamics: "stripped back", "full band", "build-up", "fade out"
    - Technical: "reverb heavy", "distorted", "clean", "lo-fi"
 
-5. Adapt metatags based on section:
+5. BACKING VOCALS:
+   - Use parentheses to indicate backing vocals in lyrics
+   - Example: "I'm walking on sunshine (yeah yeah)"
+   - Example: "I'm walking on sunshine (sunshine)"
+   - Commonly used in chorus sections to add depth and energy
+   - Can include harmonies, ad-libs, echoes, or call-and-response
+   - Include "backing vocals" in the metatag when using this feature
+
+6. Adapt metatags based on section:
    - Verse: Usually more stripped back, focus on storytelling
    - Pre-Chorus: Build-up, adding elements
-   - Chorus: Full power, all instruments
+   - Chorus: Full power, all instruments, often with backing vocals
    - Bridge: Contrast, often instrumental or solo
    - Outro: Ending, fade or abrupt stop
 
@@ -61,6 +69,7 @@ Generate:
    - Add [Instrumental] or other instructions where appropriate
    - Write creative, emotional lyrics matching the vision
    - IMPORTANT: Follow the word density guideline strictly for the verses and chorus
+   - Use backing vocals in parentheses where appropriate (especially in chorus sections)
    - Each section should have a metatag describing instrumentation
    - Example format:
      [Intro: acoustic guitar, soft piano]
@@ -68,6 +77,10 @@ Generate:
 
      [Verse 1: acoustic guitar, gentle vocals]
      Lyrics here...
+
+     [Chorus: full band, backing vocals, harmonies]
+     Main lyrics here (backing vocals here)
+     Add backing vocals using parentheses (yeah yeah)
 
 2. STYLE: Comma-separated style description for "Style of Music" field
    - Genre and subgenre
@@ -121,6 +134,8 @@ Style: ${style}${densityInstruction}
 ${instructions ? `User Instructions: ${instructions}` : ''}
 
 Generate new lyrics with the same structure (same sections) but different content. Keep the metatags format consistent with the style.${wordDensity ? ' Follow the word density guideline strictly for verses and chorus.' : ''}
+
+IMPORTANT: If the current lyrics include backing vocals in parentheses (e.g., "lyrics here (backing vocals)"), maintain this feature in the new lyrics. Use backing vocals in parentheses where appropriate, especially in chorus sections.
 
 Respond in JSON format:
 {
@@ -230,6 +245,7 @@ Generate:
    - Add [Instrumental] or other instructions where appropriate
    - Write lyrics that sound like they could be from "${artistName}"
    - IMPORTANT: Follow the word density guideline strictly for the verses and chorus
+   - Use backing vocals in parentheses where appropriate, especially if typical of "${artistName}"'s style
    - Each section should have a metatag describing instrumentation typical of this artist
    - Example format:
      [Intro: acoustic guitar, soft piano]
@@ -237,6 +253,10 @@ Generate:
 
      [Verse 1: acoustic guitar, gentle vocals]
      Lyrics here...
+
+     [Chorus: full band, backing vocals, harmonies]
+     Main lyrics here (backing vocals here)
+     Add backing vocals using parentheses (yeah yeah)
 
 2. STYLE: Comma-separated style description for "Style of Music" field
    - Genre and subgenre characteristic of "${artistName}"
