@@ -43,8 +43,51 @@ export function generateProjectPrompt(
   genre: string,
   mood: string,
   tempo: string,
-  wordDensity: string = 'medium'
+  wordDensity: string = 'medium',
+  instrumental: boolean = false
 ): string {
+  // If instrumental mode is enabled, generate a simple instrumental-only prompt
+  if (instrumental) {
+    return `Create an instrumental music project for Suno AI Custom Mode based on:
+
+Vision: ${vision}
+Genre: ${genre}
+Mood: ${mood}
+Tempo: ${tempo}
+
+IMPORTANT: This is an INSTRUMENTAL track with NO LYRICS. Generate only a single [Instrumental] tag.
+
+Generate:
+
+1. LYRICS: Only the following:
+   [Instrumental]
+
+2. STYLE: Comma-separated style description for "Style of Music" field
+   - Genre and subgenre
+   - Specific instruments
+   - Instrumental focus (no vocals)
+   - Technical elements (effects, production)
+   - Tempo and key if relevant
+   - Mood and atmosphere
+   - Emphasize that this is instrumental music
+
+3. SECTIONS: Single section structure
+
+Respond in JSON format:
+{
+  "lyrics": "[Instrumental]",
+  "style": "instrumental, ${genre.toLowerCase()}, ${mood.toLowerCase()}, comma, separated, style, elements...",
+  "sections": [
+    {
+      "section": "Instrumental",
+      "metatag": "[Instrumental]",
+      "lyrics": "[Instrumental]"
+    }
+  ],
+  "suggestions": "Tips for the user on creating instrumental music..."
+}`;
+  }
+
   const densityInstructions = {
     'extreme-sparse': 'Use EXTREMELY sparse lyrics with very few words per line (2-4 words). Focus on powerful, impactful single words or short phrases. Maximum economy of language. Leave lots of space between phrases.',
     'low': 'Use sparse, concise lyrics with minimal words (3-6 words per line). Keep it simple and direct. Short, punchy phrases.',

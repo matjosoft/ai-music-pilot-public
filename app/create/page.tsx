@@ -43,6 +43,7 @@ export default function CreatePage() {
           mood: formData.mood,
           tempo: formData.theme || 'Medium',
           wordDensity: formData.wordDensity || 'medium',
+          instrumental: formData.instrumental || false,
         };
       }
 

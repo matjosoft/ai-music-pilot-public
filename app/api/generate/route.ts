@@ -5,7 +5,7 @@ import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt } from '
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { mode, vision, genre, mood, tempo, wordDensity, title, artistName } = body;
+    const { mode, vision, genre, mood, tempo, wordDensity, title, artistName, instrumental } = body;
 
     let userPrompt: string;
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate user prompt
-      userPrompt = generateProjectPrompt(vision, genre, mood, tempo, wordDensity || 'medium');
+      userPrompt = generateProjectPrompt(vision, genre, mood, tempo, wordDensity || 'medium', instrumental || false);
     }
 
     // Call AI API (supports both Anthropic and OpenAI)
