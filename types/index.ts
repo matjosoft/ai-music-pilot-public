@@ -13,6 +13,7 @@ export interface ProjectFormData {
   targetAudience?: string;
   additionalNotes?: string;
   wordDensity?: WordDensity;
+  instrumental?: boolean;
 }
 
 export interface SongStructure {

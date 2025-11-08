@@ -51,6 +51,7 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
     targetAudience: '',
     additionalNotes: '',
     wordDensity: 'medium',
+    instrumental: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -132,6 +133,7 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
           value={formData.wordDensity}
           onChange={(e) => setFormData({ ...formData, wordDensity: e.target.value as any })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          disabled={formData.instrumental}
         >
           {WORD_DENSITIES.map((density) => (
             <option key={density.value} value={density.value}>
@@ -141,6 +143,24 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
         </select>
         <p className="text-xs text-gray-500">
           Controls how many words are used per line in the verses. Extreme sparse uses very few words for powerful impact, while high density creates detailed, elaborate lyrics.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="instrumental"
+            checked={formData.instrumental}
+            onChange={(e) => setFormData({ ...formData, instrumental: e.target.checked })}
+            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary"
+          />
+          <label htmlFor="instrumental" className="text-sm font-medium text-gray-700">
+            Instrumental (No Lyrics)
+          </label>
+        </div>
+        <p className="text-xs text-gray-500">
+          When selected, only an [Instrumental] tag will be generated with no lyrics.
         </p>
       </div>
 
