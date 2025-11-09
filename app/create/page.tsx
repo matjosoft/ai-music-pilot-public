@@ -1,25 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import ProjectForm from '@/components/ProjectForm';
+import SongForm from '@/components/SongForm';
 import ArtistModeForm from '@/components/ArtistModeForm';
-import CustomModeOutput from '@/components/CustomModeOutput';
-import SunoInstructions from '@/components/SunoInstructions';
-import { ProjectFormData, GenerationResponse, GenerationMode } from '@/types';
-import { generateId } from '@/lib/utils';
-import { saveProject } from '@/lib/storage';
+import { SongFormData, GenerationMode } from '@/types';
 
 export default function CreatePage() {
+  const router = useRouter();
   const [selectedMode, setSelectedMode] = useState<GenerationMode>('custom');
   const [isLoading, setIsLoading] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [result, setResult] = useState<GenerationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [currentWordDensity, setCurrentWordDensity] = useState<string>('medium');
 
-  const handleGenerate = async (formData: ProjectFormData) => {
+  const handleGenerate = async (formData: SongFormData) => {
     setIsLoading(true);
     setError(null);
 
@@ -29,14 +24,16 @@ export default function CreatePage() {
       if (formData.mode === 'artist') {
         // Artist mode: send title and artistName
         requestBody = {
+          songName: formData.songName,
           mode: 'artist',
-          title: formData.projectName,
+          title: formData.songName,
           artistName: formData.artistName,
           wordDensity: formData.wordDensity || 'medium',
         };
       } else {
         // Custom mode: send vision, genre, mood, tempo
         requestBody = {
+          songName: formData.songName,
           mode: 'custom',
           vision: formData.simpleDescription,
           genre: formData.genre,
@@ -56,119 +53,23 @@ export default function CreatePage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate project');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate song');
       }
 
       const data = await response.json();
-      const generationResponse: GenerationResponse = {
-        projectName: formData.projectName,
-        mode: formData.mode,
-        songs: [
-          {
-            lyrics: data.lyrics,
-            style: data.style,
-            title: formData.projectName,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-      };
 
-      setResult(generationResponse);
-      setCurrentWordDensity(formData.wordDensity || 'medium');
+      if (!data.success || !data.song) {
+        throw new Error('Invalid response from server');
+      }
 
-      // Save to localStorage
-      const projectId = generateId();
-      saveProject({
-        id: projectId,
-        ...generationResponse,
-      });
+      // Redirect to song view page
+      router.push(`/song/${data.song.id}`);
     } catch (err) {
-      console.error('Error generating project:', err);
-      setError('Failed to generate project. Please try again.');
+      console.error('Error generating song:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate song. Please try again.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleRegenerateLyrics = async () => {
-    if (!result) return;
-
-    setIsRegenerating(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/regenerate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          currentLyrics: result.songs[0].lyrics,
-          style: result.songs[0].style,
-          instructions: '',
-          wordDensity: currentWordDensity,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to regenerate lyrics');
-      }
-
-      const data = await response.json();
-      setResult({
-        ...result,
-        songs: [
-          {
-            ...result.songs[0],
-            lyrics: data.lyrics,
-          },
-        ],
-      });
-    } catch (err) {
-      console.error('Error regenerating lyrics:', err);
-      setError('Failed to regenerate lyrics. Please try again.');
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
-  const handleRegenerateMetatags = async () => {
-    if (!result) return;
-
-    setIsRegenerating(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/regenerate-metatags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          lyrics: result.songs[0].lyrics,
-          style: result.songs[0].style,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to regenerate metatags');
-      }
-
-      const data = await response.json();
-      setResult({
-        ...result,
-        songs: [
-          {
-            ...result.songs[0],
-            lyrics: data.lyrics,
-          },
-        ],
-      });
-    } catch (err) {
-      console.error('Error regenerating metatags:', err);
-      setError('Failed to regenerate metatags. Please try again.');
-    } finally {
-      setIsRegenerating(false);
     }
   };
 
@@ -185,7 +86,7 @@ export default function CreatePage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Your Music Project</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Your Song</h1>
             <p className="text-gray-600">
               Describe your music vision and let AI generate structured lyrics and style for Suno
             </p>
@@ -238,34 +139,11 @@ export default function CreatePage() {
           {/* Form */}
           <div className="mb-8">
             {selectedMode === 'custom' ? (
-              <ProjectForm onGenerate={handleGenerate} isLoading={isLoading} />
+              <SongForm onGenerate={handleGenerate} isLoading={isLoading} />
             ) : (
               <ArtistModeForm onGenerate={handleGenerate} isLoading={isLoading} />
             )}
           </div>
-
-          {/* Results */}
-          {result && (
-            <div className="space-y-6">
-              <div className="border-t-4 border-primary pt-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Generated Project</h2>
-
-                {/* Instructions */}
-                <div className="mb-6">
-                  <SunoInstructions />
-                </div>
-
-                {/* Output */}
-                <CustomModeOutput
-                  lyrics={result.songs[0].lyrics}
-                  style={result.songs[0].style}
-                  onRegenerateLyrics={handleRegenerateLyrics}
-                  onRegenerateMetatags={handleRegenerateMetatags}
-                  isRegenerating={isRegenerating}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

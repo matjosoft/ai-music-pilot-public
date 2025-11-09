@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
-import { ProjectFormData } from '@/types';
+import { SongFormData } from '@/types';
 
 interface ArtistModeFormProps {
-  onGenerate: (formData: ProjectFormData) => void;
+  onGenerate: (formData: SongFormData) => void;
   isLoading: boolean;
 }
 
@@ -17,8 +17,8 @@ const WORD_DENSITIES = [
 ];
 
 export default function ArtistModeForm({ onGenerate, isLoading }: ArtistModeFormProps) {
-  const [formData, setFormData] = useState<ProjectFormData>({
-    projectName: '',
+  const [formData, setFormData] = useState<SongFormData>({
+    songName: '',
     mode: 'artist',
     artistName: '',
     wordDensity: 'medium',
@@ -39,14 +39,14 @@ export default function ArtistModeForm({ onGenerate, isLoading }: ArtistModeForm
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="projectName" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="songName" className="block text-sm font-medium text-gray-700">
           Song Title <span className="text-red-500">*</span>
         </label>
         <input
-          id="projectName"
+          id="songName"
           type="text"
-          value={formData.projectName}
-          onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
+          value={formData.songName}
+          onChange={(e) => setFormData({ ...formData, songName: e.target.value })}
           placeholder="e.g., Lost in the Echo"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
           required

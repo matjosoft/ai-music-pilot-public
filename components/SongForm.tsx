@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
-import { ProjectFormData } from '@/types';
+import { SongFormData } from '@/types';
 import GenreSelector from './GenreSelector';
 
-interface ProjectFormProps {
-  onGenerate: (formData: ProjectFormData) => void;
+interface SongFormProps {
+  onGenerate: (formData: SongFormData) => void;
   isLoading: boolean;
 }
 
@@ -40,9 +40,9 @@ const WORD_DENSITIES = [
   { value: 'high', label: 'High', description: '10-15 words per line' },
 ];
 
-export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps) {
-  const [formData, setFormData] = useState<ProjectFormData>({
-    projectName: '',
+export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
+  const [formData, setFormData] = useState<SongFormData>({
+    songName: '',
     mode: 'simple',
     simpleDescription: '',
     genre: 'Pop',
@@ -62,14 +62,14 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-lg shadow-lg">
       <div className="space-y-2">
-        <label htmlFor="projectName" className="block text-sm font-medium text-gray-700">
-          Project Name
+        <label htmlFor="songName" className="block text-sm font-medium text-gray-700">
+          Song Name
         </label>
         <input
-          id="projectName"
+          id="songName"
           type="text"
-          value={formData.projectName}
-          onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
+          value={formData.songName}
+          onChange={(e) => setFormData({ ...formData, songName: e.target.value })}
           placeholder="My Awesome Song"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
           required
@@ -200,12 +200,12 @@ export default function ProjectForm({ onGenerate, isLoading }: ProjectFormProps)
         {isLoading ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Generating Project...</span>
+            <span>Generating Song...</span>
           </>
         ) : (
           <>
             <Sparkles className="w-5 h-5" />
-            <span>Generate Project</span>
+            <span>Generate Song</span>
           </>
         )}
       </button>

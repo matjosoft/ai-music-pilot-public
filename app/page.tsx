@@ -1,7 +1,14 @@
 import Link from 'next/link';
 import { Music, Sparkles, ArrowRight } from 'lucide-react';
+import { createServerClient } from '@/lib/supabase/server';
 
-export default function Home() {
+export default async function Home() {
+  const supabase = createServerClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const ctaLink = session ? '/create' : '/login';
+  const ctaText = session ? 'Create New Song' : 'Get Started';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <div className="container mx-auto px-4 py-16">
@@ -21,11 +28,11 @@ export default function Home() {
               and optimized style descriptions
             </p>
             <Link
-              href="/create"
+              href={ctaLink}
               className="inline-flex items-center space-x-2 bg-primary hover:bg-blue-600 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               <Sparkles className="w-6 h-6" />
-              <span>Create New Project</span>
+              <span>{ctaText}</span>
               <ArrowRight className="w-6 h-6" />
             </Link>
           </div>
@@ -66,7 +73,7 @@ export default function Home() {
                 Easy Regeneration
               </h3>
               <p className="text-gray-600">
-                Regenerate lyrics or just the metatags to fine-tune your music project
+                Regenerate lyrics or just the metatags to fine-tune your song
               </p>
             </div>
           </div>
@@ -92,7 +99,7 @@ export default function Home() {
                     2
                   </span>
                   <div>
-                    <h4 className="font-semibold text-lg text-gray-900">AI Generates Your Project</h4>
+                    <h4 className="font-semibold text-lg text-gray-900">AI Generates Your Song</h4>
                     <p className="text-gray-600">
                       Our AI creates structured lyrics with metatags and a detailed style description
                     </p>
@@ -116,10 +123,10 @@ export default function Home() {
           {/* CTA Section */}
           <div className="mt-16">
             <Link
-              href="/create"
+              href={ctaLink}
               className="inline-flex items-center space-x-2 bg-secondary hover:bg-purple-600 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              <span>Get Started Now</span>
+              <span>{session ? 'Start Creating' : 'Get Started Now'}</span>
               <ArrowRight className="w-6 h-6" />
             </Link>
           </div>

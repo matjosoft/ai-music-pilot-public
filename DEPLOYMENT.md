@@ -1,30 +1,84 @@
-# Deployment Guide for Vercel
+# Deployment Guide for Vercel with Supabase
 
-This guide will walk you through deploying your Suno Assistant app to Vercel.
+This guide will walk you through deploying your Suno Assistant app (with Supabase authentication and database) to Vercel.
 
 ## Prerequisites
 
-- A GitHub account (to connect your repository)
+- A GitHub account
 - A Vercel account (free tier is sufficient)
+- A Supabase account (free tier is sufficient)
 - Your API keys ready (Anthropic or OpenAI)
 
-## Step-by-Step Deployment
+## Part 1: Set Up Supabase
+
+### 1. Create a Supabase Project
+
+1. Go to [supabase.com](https://supabase.com)
+2. Click "Start your project" or "New Project"
+3. Sign in with GitHub
+4. Create a new project:
+   - **Organization**: Choose or create one
+   - **Project Name**: `suno-assistant` (or any name you prefer)
+   - **Database Password**: Generate a strong password (save it somewhere safe!)
+   - **Region**: Choose closest to your target users
+5. Click "Create new project"
+6. Wait 2-3 minutes for the project to initialize
+
+### 2. Run Database Migrations
+
+Your project includes database migrations in the `supabase/migrations/` folder. You have two options:
+
+#### Option A: Using Supabase Dashboard (Easiest)
+
+1. In your Supabase project dashboard, go to **SQL Editor**
+2. Copy the contents of `supabase/migrations/001_initial_schema.sql` from your repository
+3. Paste into the SQL Editor and click "Run"
+4. Repeat for `supabase/migrations/002_rename_projects_to_songs.sql`
+
+#### Option B: Using Supabase CLI (Advanced)
+
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Link to your project
+supabase link --project-ref YOUR_PROJECT_REF
+
+# Run migrations
+supabase db push
+```
+
+### 3. Get Your Supabase Credentials
+
+1. In your Supabase project dashboard, go to **Settings** → **API**
+2. Copy these two values (you'll need them for Vercel):
+   - **Project URL** (looks like `https://xxxxx.supabase.co`)
+   - **anon public** key (under "Project API keys")
+
+### 4. Configure Authentication
+
+1. In Supabase dashboard, go to **Authentication** → **Providers**
+2. Enable **Email** provider (should be enabled by default)
+3. Configure email settings or use Supabase's default SMTP for testing
+4. Optionally enable other providers (Google, GitHub, etc.)
+
+## Part 2: Deploy to Vercel
 
 ### 1. Create a Vercel Account
 
 1. Go to [vercel.com](https://vercel.com)
 2. Click "Sign Up"
-3. Choose "Continue with GitHub" (easiest option)
+3. Choose "Continue with GitHub"
 4. Authorize Vercel to access your GitHub account
 
 ### 2. Push Your Code to GitHub
 
-Make sure your code is pushed to GitHub on the branch: `claude/deploy-static-server-011CUxFCXvTdBL4gJ7NpKQgh`
+Ensure your code is pushed to GitHub on the branch: `claude/prepare-for-launch-011CUvnSa5vUBMi5SDr5Lvq2`
 
 ```bash
 git add .
-git commit -m "feat: Configure for Vercel deployment"
-git push -u origin claude/deploy-static-server-011CUxFCXvTdBL4gJ7NpKQgh
+git commit -m "feat: Ready for deployment with Supabase"
+git push -u origin claude/prepare-for-launch-011CUvnSa5vUBMi5SDr5Lvq2
 ```
 
 ### 3. Import Project to Vercel
@@ -33,103 +87,157 @@ git push -u origin claude/deploy-static-server-011CUxFCXvTdBL4gJ7NpKQgh
 2. Click "Add New..." → "Project"
 3. Find your repository `matjosoft/suno-assistant`
 4. Click "Import"
+5. If asked about branch, select `claude/prepare-for-launch-011CUvnSa5vUBMi5SDr5Lvq2`
 
 ### 4. Configure Build Settings
 
-Vercel will automatically detect Next.js. You should see:
+Vercel will automatically detect Next.js:
 
 - **Framework Preset**: Next.js (auto-detected)
 - **Build Command**: `npm run build` (auto-filled)
 - **Output Directory**: `.next` (auto-filled)
 - **Install Command**: `npm install` (auto-filled)
 
-Click "Deploy" to proceed.
+**Do NOT click "Deploy" yet!** First, add environment variables.
 
 ### 5. Add Environment Variables
 
-**IMPORTANT**: Before your first deployment works, you need to add environment variables.
+Click "Environment Variables" section and add ALL of these:
 
-After clicking deploy (or in project settings):
+#### AI Provider Configuration
 
-1. Go to your project dashboard
-2. Click "Settings" → "Environment Variables"
-3. Add the following variables:
+**If using Anthropic Claude:**
+- Name: `AI_PROVIDER` → Value: `anthropic`
+- Name: `ANTHROPIC_API_KEY` → Value: `your_actual_anthropic_api_key`
 
-   **If using Anthropic Claude:**
-   - `AI_PROVIDER` = `anthropic`
-   - `ANTHROPIC_API_KEY` = `your_actual_api_key_here`
+**If using OpenAI:**
+- Name: `AI_PROVIDER` → Value: `openai`
+- Name: `OPENAI_API_KEY` → Value: `your_actual_openai_api_key`
+- Name: `OPENAI_MODEL` → Value: `gpt-4-turbo-preview` (optional)
 
-   **If using OpenAI:**
-   - `AI_PROVIDER` = `openai`
-   - `OPENAI_API_KEY` = `your_actual_api_key_here`
-   - `OPENAI_MODEL` = `gpt-4-turbo-preview` (optional)
+#### Supabase Configuration (Required)
 
-4. Click "Save"
-5. Redeploy the project (Settings → Deployments → click on latest deployment → "Redeploy")
+- Name: `NEXT_PUBLIC_SUPABASE_URL` → Value: `https://xxxxx.supabase.co` (from Supabase settings)
+- Name: `NEXT_PUBLIC_SUPABASE_ANON_KEY` → Value: `your_anon_key` (from Supabase settings)
 
-### 6. Access Your App
+**IMPORTANT**: Make sure these are set for **all environments** (Production, Preview, Development)
 
-Once deployment is complete:
+### 6. Configure Authentication Redirect URLs
 
-1. You'll see a success message with a URL like: `https://your-project-name.vercel.app`
-2. Click the URL to open your deployed app
-3. Test the functionality to make sure it works!
+After your first deployment, you'll get a Vercel URL (e.g., `https://suno-assistant.vercel.app`)
+
+1. Go back to **Supabase Dashboard** → **Authentication** → **URL Configuration**
+2. Add your Vercel URL to:
+   - **Site URL**: `https://your-app.vercel.app`
+   - **Redirect URLs**: Add these patterns:
+     - `https://your-app.vercel.app/auth/callback`
+     - `https://your-app.vercel.app/**`
+     - `http://localhost:3000/**` (for local development)
+
+### 7. Deploy!
+
+1. Click "Deploy" in Vercel
+2. Wait 2-3 minutes for the build to complete
+3. You'll see a success message with your live URL
+
+### 8. Test Your Deployment
+
+1. Visit your deployed URL (e.g., `https://suno-assistant.vercel.app`)
+2. Test the following:
+   - Click "Sign In" - you should be able to create an account
+   - After signing in, create a song
+   - Go to Dashboard - you should see your saved songs
+   - Test regenerate lyrics and metatags
+   - Test delete functionality
 
 ## Custom Domain (Optional)
 
 To use your own domain (e.g., `suno.matjosoft.se`):
 
-1. Go to project "Settings" → "Domains"
+1. Go to Vercel project "Settings" → "Domains"
 2. Add your custom domain
 3. Follow Vercel's DNS configuration instructions
 4. Update your domain's DNS records with your hosting provider
+5. **Don't forget**: Add the custom domain to Supabase redirect URLs!
 
 ## Automatic Deployments
 
-Vercel will automatically redeploy your app whenever you push to your GitHub repository. This means:
+Vercel will automatically redeploy whenever you push to your GitHub branch:
 
 - Push to GitHub → Automatic deployment
-- No manual deployment needed after initial setup
+- No manual deployment needed
 
-## Environment Variables Security
+## Environment Variables Summary
 
-- Your API keys are stored securely in Vercel
-- They are NOT exposed in the browser
-- They are only accessible server-side in your API routes
+Here's a quick checklist of all required environment variables:
+
+**AI Provider (choose one):**
+- ✓ `AI_PROVIDER`
+- ✓ `ANTHROPIC_API_KEY` (if using Anthropic)
+- ✓ `OPENAI_API_KEY` (if using OpenAI)
+
+**Supabase (required):**
+- ✓ `NEXT_PUBLIC_SUPABASE_URL`
+- ✓ `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ## Troubleshooting
 
 ### Build Fails
-- Check the build logs in Vercel dashboard
+- Check build logs in Vercel dashboard
 - Ensure all dependencies are in `package.json`
-- Make sure TypeScript types are correct
+- Verify TypeScript types are correct
 
 ### App Loads But API Doesn't Work
 - Check environment variables are set correctly
-- Verify API keys are valid
-- Check function logs in Vercel dashboard (Deployments → View Function Logs)
+- Verify AI API keys are valid
+- Check function logs in Vercel (Deployments → View Function Logs)
 
-### Need Help?
-- Check [Vercel Documentation](https://vercel.com/docs)
-- View deployment logs in your Vercel dashboard
+### Authentication Not Working
+- Verify Supabase redirect URLs include your Vercel domain
+- Check that `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set
+- Check Supabase auth logs (Authentication → Logs)
 
-## Testing Locally Before Deployment
+### Songs Not Saving
+- Verify database migrations ran successfully
+- Check Supabase Table Editor to see if tables exist
+- Check Vercel function logs for database errors
 
-To test the production build locally:
+### Local Development
 
+To run locally with Supabase:
+
+1. Copy `.env.example` to `.env.local`
+2. Fill in all environment variables
+3. Run:
 ```bash
-npm run build
-npm start
+npm install
+npm run dev
 ```
 
-This simulates how the app will run on Vercel.
+## Security Notes
+
+- API keys are stored securely in Vercel (server-side only)
+- Supabase anon key is safe to expose (it has Row Level Security)
+- Never commit `.env` or `.env.local` files to Git
 
 ## Cost
 
-Vercel's **Hobby (Free) plan** includes:
+**Vercel Hobby (Free) plan** includes:
 - Unlimited deployments
 - Automatic HTTPS
 - 100GB bandwidth/month
 - Serverless function executions
 
-This is more than sufficient for testing and moderate usage.
+**Supabase Free plan** includes:
+- 50,000 monthly active users
+- 500MB database storage
+- 1GB file storage
+- 2GB bandwidth
+
+This is sufficient for testing and moderate usage.
+
+## Need Help?
+
+- [Vercel Documentation](https://vercel.com/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- Check deployment and function logs in respective dashboards
