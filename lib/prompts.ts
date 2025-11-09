@@ -71,20 +71,15 @@ Generate:
    - Mood and atmosphere
    - Emphasize that this is instrumental music
 
-3. SECTIONS: Single section structure
-
 Respond in JSON format:
 {
-  "lyrics": "[Instrumental]",
-  "style": "instrumental, ${genre.toLowerCase()}, ${mood.toLowerCase()}, comma, separated, style, elements...",
-  "sections": [
+  "songs": [
     {
-      "section": "Instrumental",
-      "metatag": "[Instrumental]",
-      "lyrics": "[Instrumental]"
+      "title": "Generated title based on the vision",
+      "lyrics": "[Instrumental]",
+      "style": "instrumental, ${genre.toLowerCase()}, ${mood.toLowerCase()}, comma, separated, style, elements..."
     }
-  ],
-  "suggestions": "Tips for the user on creating instrumental music..."
+  ]
 }`;
   }
 
@@ -133,20 +128,17 @@ Generate:
    - Tempo and key if relevant
    - Mood and atmosphere
 
-3. SECTIONS: Break down the structure with metatags
+3. TITLE: Create a compelling song title that matches the vision and mood
 
 Respond in JSON format:
 {
-  "lyrics": "Complete lyrics with metatags...",
-  "style": "comma, separated, style, elements...",
-  "sections": [
+  "songs": [
     {
-      "section": "Intro",
-      "metatag": "[Intro: acoustic guitar, soft piano]",
-      "lyrics": "[Instrumental]"
+      "title": "Song title here",
+      "lyrics": "Complete lyrics with metatags...",
+      "style": "comma, separated, style, elements..."
     }
-  ],
-  "suggestions": "Tips for the user..."
+  ]
 }`;
 }
 
@@ -180,16 +172,9 @@ Generate new lyrics with the same structure (same sections) but different conten
 
 IMPORTANT: If the current lyrics include backing vocals in parentheses (e.g., "lyrics here (backing vocals)"), maintain this feature in the new lyrics. Use backing vocals in parentheses where appropriate, especially in chorus sections.
 
-Respond in JSON format:
+Respond in JSON format with ONLY the new lyrics:
 {
-  "lyrics": "Complete new lyrics with metatags...",
-  "sections": [
-    {
-      "section": "Intro",
-      "metatag": "[Intro: acoustic guitar, soft piano]",
-      "lyrics": "[Instrumental]"
-    }
-  ]
+  "lyrics": "Complete new lyrics with metatags..."
 }`;
 }
 
@@ -209,18 +194,12 @@ Generate new metatags that:
 2. Create an interesting and dynamic arrangement
 3. Use appropriate instrumentation for each section
 4. Keep the actual lyric text unchanged
+5. Create a fresh, compelling song title
 
 Respond in JSON format:
 {
-  "lyrics": "Complete lyrics with NEW metatags but SAME lyric text...",
-  "sections": [
-    {
-      "section": "Intro",
-      "metatag": "[Intro: new instrumentation here]",
-      "lyrics": "exact same lyrics as before",
-      "reasoning": "why these instruments work for this section"
-    }
-  ]
+  "style": "updated, comma, separated, style, description...",
+  "title": "New compelling song title"
 }`;
 }
 
@@ -309,19 +288,14 @@ Generate:
    - Tempo and key if relevant to their style
    - Mood and atmosphere typical of "${artistName}"'s music
 
-3. SECTIONS: Break down the structure with metatags that reflect this artist's typical arrangements
-
 Respond in JSON format:
 {
-  "lyrics": "Complete lyrics with metatags in the style of ${artistName}...",
-  "style": "comma, separated, style, elements, matching, ${artistName}...",
-  "sections": [
+  "songs": [
     {
-      "section": "Intro",
-      "metatag": "[Intro: instruments typical of ${artistName}]",
-      "lyrics": "[Instrumental]"
+      "title": "${title}",
+      "lyrics": "Complete lyrics with metatags in the style of ${artistName}...",
+      "style": "comma, separated, style, elements, matching, ${artistName}..."
     }
-  ],
-  "suggestions": "Tips for capturing ${artistName}'s style in Suno..."
+  ]
 }`;
 }
