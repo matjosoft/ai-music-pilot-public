@@ -19,16 +19,16 @@ export async function migrateLocalStorageProjects() {
 
   for (const project of localProjects) {
     try {
-      await supabase.from('projects').insert({
+      await supabase.from('songs').insert({
         user_id: user.id,
-        name: project.projectName,
+        name: project.songName,
         mode: project.mode,
         songs: project.songs,
         created_at: project.timestamp
       })
       migrated++
     } catch (error) {
-      errors.push({ project: project.projectName, error })
+      errors.push({ project: project.songName, error })
     }
   }
 
