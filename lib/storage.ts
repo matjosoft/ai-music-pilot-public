@@ -1,8 +1,8 @@
-import { StoredProject } from '@/types';
+import { StoredSong } from '@/types';
 
 const STORAGE_KEY = 'suno-projects';
 
-export function getProjects(): StoredProject[] {
+export function getProjects(): StoredSong[] {
   if (typeof window === 'undefined') return [];
 
   try {
@@ -15,7 +15,7 @@ export function getProjects(): StoredProject[] {
   }
 }
 
-export function saveProject(project: StoredProject): void {
+export function saveProject(project: StoredSong): void {
   if (typeof window === 'undefined') return;
 
   try {
@@ -34,7 +34,7 @@ export function saveProject(project: StoredProject): void {
   }
 }
 
-export function getProject(id: string): StoredProject | null {
+export function getProject(id: string): StoredSong | null {
   const projects = getProjects();
   return projects.find(p => p.id === id) || null;
 }
