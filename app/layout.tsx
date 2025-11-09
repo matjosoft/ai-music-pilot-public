@@ -28,6 +28,9 @@ export default async function RootLayout({
               <div className="flex items-center space-x-4">
                 {session ? (
                   <>
+                    <Link href="/dashboard" className="hover:text-purple-200 transition-colors">
+                      My Songs
+                    </Link>
                     <Link href="/create" className="hover:text-purple-200 transition-colors">
                       Create
                     </Link>

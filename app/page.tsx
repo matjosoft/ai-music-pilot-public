@@ -7,7 +7,7 @@ export default async function Home() {
   const { data: { session } } = await supabase.auth.getSession();
 
   const ctaLink = session ? '/create' : '/login';
-  const ctaText = session ? 'Create New Project' : 'Get Started';
+  const ctaText = session ? 'Create New Song' : 'Get Started';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -73,7 +73,7 @@ export default async function Home() {
                 Easy Regeneration
               </h3>
               <p className="text-gray-600">
-                Regenerate lyrics or just the metatags to fine-tune your music project
+                Regenerate lyrics or just the metatags to fine-tune your song
               </p>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default async function Home() {
                     2
                   </span>
                   <div>
-                    <h4 className="font-semibold text-lg text-gray-900">AI Generates Your Project</h4>
+                    <h4 className="font-semibold text-lg text-gray-900">AI Generates Your Song</h4>
                     <p className="text-gray-600">
                       Our AI creates structured lyrics with metatags and a detailed style description
                     </p>
