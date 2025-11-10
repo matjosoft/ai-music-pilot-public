@@ -1,3 +1,4 @@
+#!/usr/bin/env tsx
 /**
  * Setup Test User Script
  *
@@ -7,27 +8,32 @@
  * Run this script after running the database migration to set up the test user.
  *
  * Usage:
- *   npx tsx scripts/setup-test-user.ts
- *
- * Or add to package.json scripts:
- *   "setup-test-user": "tsx scripts/setup-test-user.ts"
+ *   npm run setup-test-user
+ *   
+ * Or with explicit env vars:
+ *   NEXT_PUBLIC_SUPABASE_URL=xxx SUPABASE_SERVICE_ROLE_KEY=xxx npm run setup-test-user
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { config } from 'dotenv'
-import { resolve } from 'path'
-import { existsSync } from 'fs'
 
-// Load environment variables - try .env.local first, then .env
-const envLocalPath = resolve(process.cwd(), '.env.local')
-const envPath = resolve(process.cwd(), '.env')
-
-if (existsSync(envLocalPath)) {
-  config({ path: envLocalPath })
-} else if (existsSync(envPath)) {
-  config({ path: envPath })
-} else {
-  config() // Try default .env loading
+// Try to load from dotenv if available
+try {
+  const dotenv = await import('dotenv')
+  const { resolve } = await import('path')
+  const { existsSync } = await import('fs')
+  
+  const envLocalPath = resolve(process.cwd(), '.env.local')
+  const envPath = resolve(process.cwd(), '.env')
+  
+  if (existsSync(envLocalPath)) {
+    dotenv.config({ path: envLocalPath })
+  } else if (existsSync(envPath)) {
+    dotenv.config({ path: envPath })
+  } else {
+    dotenv.config()
+  }
+} catch (e) {
+  // dotenv not available, rely on environment variables
 }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -36,10 +42,12 @@ const TEST_USER_EMAIL = 'matjosoft@gmail.com'
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error('❌ Missing required environment variables:')
-  console.error('   NEXT_PUBLIC_SUPABASE_URL')
-  console.error('   SUPABASE_SERVICE_ROLE_KEY')
-  console.error('\n💡 Make sure you have a .env.local or .env file with these variables.')
-  console.error('   Or set them as environment variables before running this script.')
+  console.error('   NEXT_PUBLIC_SUPABASE_URL:', SUPABASE_URL ? '✓ Set' : '✗ Missing')
+  console.error('   SUPABASE_SERVICE_ROLE_KEY:', SUPABASE_SERVICE_ROLE_KEY ? '✓ Set' : '✗ Missing')
+  console.error('\n💡 Options to fix this:')
+  console.error('   1. Create a .env or .env.local file with these variables')
+  console.error('   2. Set them as environment variables:')
+  console.error('      NEXT_PUBLIC_SUPABASE_URL=xxx SUPABASE_SERVICE_ROLE_KEY=xxx npm run setup-test-user')
   process.exit(1)
 }
 
