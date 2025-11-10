@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 /**
  * Setup Test User Script
  *
@@ -9,31 +9,26 @@
  *
  * Usage:
  *   npm run setup-test-user
- *   
+ *
  * Or with explicit env vars:
  *   NEXT_PUBLIC_SUPABASE_URL=xxx SUPABASE_SERVICE_ROLE_KEY=xxx npm run setup-test-user
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+import { existsSync } from 'fs'
 
-// Try to load from dotenv if available
-try {
-  const dotenv = await import('dotenv')
-  const { resolve } = await import('path')
-  const { existsSync } = await import('fs')
-  
-  const envLocalPath = resolve(process.cwd(), '.env.local')
-  const envPath = resolve(process.cwd(), '.env')
-  
-  if (existsSync(envLocalPath)) {
-    dotenv.config({ path: envLocalPath })
-  } else if (existsSync(envPath)) {
-    dotenv.config({ path: envPath })
-  } else {
-    dotenv.config()
-  }
-} catch (e) {
-  // dotenv not available, rely on environment variables
+// Load environment variables - try .env.local first, then .env
+const envLocalPath = resolve(process.cwd(), '.env.local')
+const envPath = resolve(process.cwd(), '.env')
+
+if (existsSync(envLocalPath)) {
+  config({ path: envLocalPath })
+} else if (existsSync(envPath)) {
+  config({ path: envPath })
+} else {
+  config() // Try default .env loading
 }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -55,7 +50,7 @@ async function setupTestUser() {
   console.log('🔧 Setting up test user...\n')
 
   // Create Supabase client with service role key (bypasses RLS)
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
