@@ -3,6 +3,7 @@ import { generateAIResponse } from '@/lib/ai-client';
 import { SYSTEM_PROMPT, regenerateMetatagsPrompt } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase/server';
 import { SongService } from '@/lib/services/songs';
+import { checkUsageLimit, logUsage, getUsageForResponse } from '@/lib/utils/usage-checker';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // 2. Parse request body
+    // 2. Check usage limit
+    const usageCheck = await checkUsageLimit(user.id)
+    if (!usageCheck.allowed && usageCheck.response) {
+      return usageCheck.response
+    }
+
+    // 3. Parse request body
     const body = await request.json();
     const { songId, songIndex, lyrics, style } = body;
 
@@ -26,23 +33,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Fetch existing song
+    // 4. Fetch existing song
     const song = await SongService.getSongServer(user.id, songId)
 
     if (!song) {
       return NextResponse.json({ error: 'Song not found' }, { status: 404 })
     }
 
-    // 4. Generate user prompt
+    // 5. Generate user prompt
     const userPrompt = regenerateMetatagsPrompt(lyrics, style);
 
-    // 5. Call AI API (supports both Anthropic and OpenAI)
+    // 6. Call AI API (supports both Anthropic and OpenAI)
     const response = await generateAIResponse({
       systemPrompt: SYSTEM_PROMPT,
       userPrompt,
     });
 
-    // 6. Parse JSON response
+    // 7. Parse JSON response
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(response.content);
@@ -54,7 +61,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 7. Update song in database
+    // 8. Update song in database
     const updatedSongs = [...song.songs]
     updatedSongs[songIndex] = {
       ...updatedSongs[songIndex],
@@ -68,9 +75,16 @@ export async function POST(request: NextRequest) {
       { songs: updatedSongs }
     )
 
+    // 9. Log usage
+    await logUsage(user.id, 'regenerate_metatags', songId)
+
+    // 10. Get updated usage stats
+    const usage = await getUsageForResponse(user.id)
+
     return NextResponse.json({
       success: true,
-      song: updatedSong
+      song: updatedSong,
+      usage
     });
   } catch (error) {
     console.error('Error regenerating metatags:', error);
