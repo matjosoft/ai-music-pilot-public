@@ -16,18 +16,30 @@
 import { createClient } from '@supabase/supabase-js'
 import { config } from 'dotenv'
 import { resolve } from 'path'
+import { existsSync } from 'fs'
 
-// Load environment variables from .env.local
-config({ path: resolve(process.cwd(), '.env.local') })
+// Load environment variables - try .env.local first, then .env
+const envLocalPath = resolve(process.cwd(), '.env.local')
+const envPath = resolve(process.cwd(), '.env')
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+if (existsSync(envLocalPath)) {
+  config({ path: envLocalPath })
+} else if (existsSync(envPath)) {
+  config({ path: envPath })
+} else {
+  config() // Try default .env loading
+}
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const TEST_USER_EMAIL = 'matjosoft@gmail.com'
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error('❌ Missing required environment variables:')
   console.error('   NEXT_PUBLIC_SUPABASE_URL')
   console.error('   SUPABASE_SERVICE_ROLE_KEY')
+  console.error('\n💡 Make sure you have a .env.local or .env file with these variables.')
+  console.error('   Or set them as environment variables before running this script.')
   process.exit(1)
 }
 
