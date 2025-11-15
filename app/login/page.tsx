@@ -11,8 +11,20 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Initialize subscription for new/existing user
+        try {
+          await fetch('/api/auth/initialize', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+        } catch (error) {
+          console.error('Failed to initialize subscription:', error)
+        }
+
         router.push('/create')
         router.refresh()
       }
