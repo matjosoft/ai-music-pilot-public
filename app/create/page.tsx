@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import SongForm from '@/components/SongForm';
 import ArtistModeForm from '@/components/ArtistModeForm';
+import UpgradePrompt from '@/components/UpgradePrompt';
 import { SongFormData, GenerationMode } from '@/types';
 
 export default function CreatePage() {
@@ -13,6 +14,8 @@ export default function CreatePage() {
   const [selectedMode, setSelectedMode] = useState<GenerationMode>('custom');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [usageInfo, setUsageInfo] = useState<{ remaining: number; limit: number } | null>(null);
 
   const handleGenerate = async (formData: SongFormData) => {
     setIsLoading(true);
@@ -54,6 +57,18 @@ export default function CreatePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
+
+        // Handle usage limit (429 error)
+        if (response.status === 429) {
+          setUsageInfo({
+            remaining: errorData.usage?.remaining || 0,
+            limit: errorData.usage?.limit || 5
+          });
+          setShowUpgradePrompt(true);
+          setIsLoading(false);
+          return;
+        }
+
         throw new Error(errorData.error || 'Failed to generate song');
       }
 
@@ -74,9 +89,16 @@ export default function CreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-5xl mx-auto">
+    <>
+      <UpgradePrompt
+        isOpen={showUpgradePrompt}
+        onClose={() => setShowUpgradePrompt(false)}
+        remaining={usageInfo?.remaining || 0}
+        limit={usageInfo?.limit || 5}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <Link
@@ -146,6 +168,7 @@ export default function CreatePage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
