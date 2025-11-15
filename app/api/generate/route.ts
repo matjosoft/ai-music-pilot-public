@@ -3,6 +3,7 @@ import { generateAIResponse } from '@/lib/ai-client';
 import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase/server';
 import { SongService } from '@/lib/services/songs';
+import { checkUsageLimit, logUsage, getUsageForResponse } from '@/lib/utils/usage-checker';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,11 +18,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Parse request body
+    // 2. Check usage limit
+    const usageCheck = await checkUsageLimit(user.id)
+    if (!usageCheck.allowed && usageCheck.response) {
+      return usageCheck.response
+    }
+
+    // 3. Parse request body
     const body = await request.json();
     const { songName, mode, vision, genre, mood, tempo, wordDensity, title, artistName, instrumental } = body;
 
-    // 3. Validate song name
+    // 4. Validate song name
     if (!songName) {
       return NextResponse.json(
         { error: 'Song name is required' },
@@ -57,13 +64,13 @@ export async function POST(request: NextRequest) {
       userPrompt = generateProjectPrompt(vision, genre, mood, tempo, wordDensity || 'medium', instrumental || false);
     }
 
-    // 4. Call AI API (supports both Anthropic and OpenAI)
+    // 5. Call AI API (supports both Anthropic and OpenAI)
     const response = await generateAIResponse({
       systemPrompt: SYSTEM_PROMPT,
       userPrompt,
     });
 
-    // 5. Parse JSON response
+    // 6. Parse JSON response
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(response.content);
@@ -75,7 +82,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 6. Validate parsed response has songs
+    // 7. Validate parsed response has songs
     if (!parsedResponse.songs || !Array.isArray(parsedResponse.songs) || parsedResponse.songs.length === 0) {
       console.error('Invalid AI response - missing songs:', parsedResponse);
       return NextResponse.json(
@@ -86,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating song with content:', parsedResponse.songs);
 
-    // 7. Save to Supabase
+    // 8. Save to Supabase
     const song = await SongService.createSongServer(
       user.id,
       songName,
@@ -96,10 +103,17 @@ export async function POST(request: NextRequest) {
 
     console.log('Created song:', song);
 
-    // 8. Return song with ID
+    // 9. Log usage
+    await logUsage(user.id, 'generate', song.id)
+
+    // 10. Get updated usage stats
+    const usage = await getUsageForResponse(user.id)
+
+    // 11. Return song with ID and usage stats
     return NextResponse.json({
       success: true,
-      song
+      song,
+      usage
     });
   } catch (error) {
     console.error('Error generating song:', error);

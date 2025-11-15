@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { createServerClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import UsageIndicator from '@/components/UsageIndicator';
 
 export const metadata: Metadata = {
   title: 'Suno AI Music Assistant',
@@ -34,6 +35,7 @@ export default async function RootLayout({
                     <Link href="/create" className="hover:text-purple-200 transition-colors">
                       Create
                     </Link>
+                    <UsageIndicator />
                     <span className="text-purple-200">
                       {session.user.email}
                     </span>

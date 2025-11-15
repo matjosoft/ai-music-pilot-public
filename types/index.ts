@@ -46,3 +46,54 @@ export interface Song {
   created_at: string
   updated_at: string
 }
+
+// Subscription types
+export type SubscriptionTier = 'free' | 'pro' | 'test'
+export type UsageActionType = 'generate' | 'regenerate_lyrics' | 'regenerate_metatags'
+
+export interface UserSubscription {
+  id: string
+  user_id: string
+  tier: SubscriptionTier
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  stripe_price_id: string | null
+  current_period_start: string | null
+  current_period_end: string | null
+  cancel_at_period_end: boolean
+  generation_limit: number
+  trial_ends_at: string | null
+  is_test_user: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface UsageLog {
+  id: string
+  user_id: string
+  action_type: UsageActionType
+  song_id: string | null
+  tokens_used: number | null
+  model_used: string | null
+  created_at: string
+}
+
+export interface UsageCheckResult {
+  allowed: boolean
+  remaining: number
+  limit: number
+  reason?: string
+  isTestUser?: boolean
+  isInTrial?: boolean
+}
+
+export interface UsageStats {
+  currentPeriodUsage: number
+  limit: number
+  remaining: number
+  periodStart: string | null
+  periodEnd: string | null
+  tier: SubscriptionTier
+  isTestUser: boolean
+  isInTrial: boolean
+}
