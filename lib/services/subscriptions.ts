@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import type { UserSubscription, SubscriptionTier, UsageCheckResult, UsageStats } from '@/types'
 
 export class SubscriptionService {
@@ -75,6 +75,7 @@ export class SubscriptionService {
 
   /**
    * Create a new subscription (server-side)
+   * Uses service role to bypass RLS
    */
   static async createSubscriptionServer(
     userId: string,
@@ -85,7 +86,7 @@ export class SubscriptionService {
       isTestUser?: boolean
     }
   ): Promise<UserSubscription> {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Determine generation limit based on tier
     let generationLimit = options?.generationLimit
@@ -127,12 +128,13 @@ export class SubscriptionService {
 
   /**
    * Update a user's subscription (server-side)
+   * Uses service role to bypass RLS
    */
   static async updateSubscriptionServer(
     userId: string,
     updates: Partial<Omit<UserSubscription, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
   ): Promise<UserSubscription> {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     const { data, error } = await supabase
       .from('user_subscriptions')

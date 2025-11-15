@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import type { UsageLog, UsageActionType, UsageCheckResult, UsageStats } from '@/types'
 import { SubscriptionService } from './subscriptions'
 
@@ -42,6 +42,7 @@ export class UsageService {
 
   /**
    * Log a usage event (server-side)
+   * Uses service role to bypass RLS
    */
   static async logUsage(
     userId: string,
@@ -52,7 +53,7 @@ export class UsageService {
       modelUsed?: string
     }
   ): Promise<UsageLog> {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     const { data, error } = await supabase
       .from('usage_logs')
