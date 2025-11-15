@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface UsageStats {
   currentPeriodUsage: number
@@ -18,11 +18,27 @@ interface UsageStats {
 export default function SubscriptionPage() {
   const [usage, setUsage] = useState<UsageStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [portalLoading, setPortalLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     fetchUsage()
-  }, [])
+
+    // Check for success/cancel query params from Stripe redirect
+    const success = searchParams.get('success')
+    const canceled = searchParams.get('canceled')
+
+    if (success) {
+      // Show success message (could add a toast notification here)
+      console.log('Payment successful!')
+      // Refresh usage to show new tier
+      setTimeout(() => fetchUsage(), 1000)
+    } else if (canceled) {
+      console.log('Payment canceled')
+    }
+  }, [searchParams])
 
   const fetchUsage = async () => {
     try {
@@ -70,6 +86,56 @@ export default function SubscriptionPage() {
         return 'Test User'
       default:
         return 'Free'
+    }
+  }
+
+  const handleUpgrade = async () => {
+    setCheckoutLoading(true)
+    try {
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session')
+      }
+
+      const data = await response.json()
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url
+    } catch (error) {
+      console.error('Error creating checkout session:', error)
+      alert('Failed to start checkout. Please try again.')
+      setCheckoutLoading(false)
+    }
+  }
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true)
+    try {
+      const response = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create portal session')
+      }
+
+      const data = await response.json()
+
+      // Redirect to Stripe Customer Portal
+      window.location.href = data.url
+    } catch (error) {
+      console.error('Error creating portal session:', error)
+      alert('Failed to open subscription management. Please try again.')
+      setPortalLoading(false)
     }
   }
 
@@ -149,8 +215,23 @@ export default function SubscriptionPage() {
             </div>
             {usage.tier === 'free' && !usage.isTestUser && (
               <div>
-                <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
-                  Upgrade to Pro
+                <button
+                  onClick={handleUpgrade}
+                  disabled={checkoutLoading}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {checkoutLoading ? 'Loading...' : 'Upgrade to Pro'}
+                </button>
+              </div>
+            )}
+            {usage.tier === 'pro' && !usage.isTestUser && usage.isInTrial === false && (
+              <div>
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={portalLoading}
+                  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {portalLoading ? 'Loading...' : 'Manage Subscription'}
                 </button>
               </div>
             )}
@@ -282,8 +363,12 @@ export default function SubscriptionPage() {
                     Priority support
                   </li>
                 </ul>
-                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                  Upgrade to Pro
+                <button
+                  onClick={handleUpgrade}
+                  disabled={checkoutLoading}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {checkoutLoading ? 'Loading...' : 'Upgrade to Pro'}
                 </button>
               </div>
             </div>
