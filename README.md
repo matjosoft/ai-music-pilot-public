@@ -1,5 +1,5 @@
-# suno-assistant
-An assistant for Suno AI music creation platform
+# AI Music Pilot
+Your AI Co-Pilot for Music Creation - Navigate your music journey with AI-powered lyrics, prompts, and metatags for Suno AI
 
 ## Features
 

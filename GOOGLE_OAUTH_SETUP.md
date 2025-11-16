@@ -1,6 +1,6 @@
 # Google OAuth Setup Guide
 
-This guide will walk you through setting up Google OAuth authentication for your Suno Assistant app.
+This guide will walk you through setting up Google OAuth authentication for your AI Music Pilot app.
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ This guide will walk you through setting up Google OAuth authentication for your
 5. If prompted, configure the OAuth consent screen:
    - Choose **External** for user type (unless you have a Google Workspace)
    - Fill in the required app information:
-     - App name: `Suno Assistant`
+     - App name: `AI Music Pilot`
      - User support email: Your email
      - Developer contact: Your email
    - Add scopes (recommended):
@@ -25,7 +25,7 @@ This guide will walk you through setting up Google OAuth authentication for your
    - Add test users if in testing mode
 6. Create OAuth client ID:
    - Application type: **Web application**
-   - Name: `Suno Assistant Web Client`
+   - Name: `AI Music Pilot Web Client`
    - Authorized JavaScript origins:
      - `http://localhost:3000` (for development)
      - `https://your-production-domain.com` (for production)
@@ -94,7 +94,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-2. After deployment, get your Vercel URL (e.g., `https://suno-assistant.vercel.app`)
+2. After deployment, get your Vercel URL (e.g., `https://ai-music-pilot.vercel.app`)
 
 3. Update Google Cloud Console:
    - Add your Vercel URL to **Authorized JavaScript origins**

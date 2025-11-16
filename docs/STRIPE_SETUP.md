@@ -1,6 +1,6 @@
 # Stripe Integration Setup Guide
 
-This guide will walk you through setting up Stripe payment processing for the Suno AI Music Assistant.
+This guide will walk you through setting up Stripe payment processing for AI Music Pilot.
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ This guide will walk you through setting up Stripe payment processing for the Su
 1. Go to https://dashboard.stripe.com/test/products
 2. Click **"+ Add product"**
 3. Fill in the details:
-   - **Name:** Suno Assistant Pro
+   - **Name:** AI Music Pilot Pro
    - **Description:** 100 song generations per month
    - **Pricing:** Recurring
    - **Price:** $5.00

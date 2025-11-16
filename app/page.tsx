@@ -21,11 +21,10 @@ export default async function Home() {
               </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Suno AI Music Assistant
+              AI Music Pilot
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8">
-              Create better music with Suno AI using intelligent prompts, structured lyrics,
-              and optimized style descriptions
+              Your AI Co-Pilot for Music Creation - Navigate your music journey with AI-powered lyrics, prompts, and metatags for Suno AI
             </p>
             <Link
               href={ctaLink}

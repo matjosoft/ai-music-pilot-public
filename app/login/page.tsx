@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-900 to-indigo-900">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl">
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign in to Suno Assistant</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Sign in to AI Music Pilot</h1>
         <Auth
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
