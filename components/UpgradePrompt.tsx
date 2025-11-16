@@ -70,7 +70,7 @@ export default function UpgradePrompt({
         {/* Upgrade options */}
         <div className="border border-purple-200 rounded-lg p-4 mb-6 bg-gradient-to-br from-purple-50 to-indigo-50">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-bold text-gray-900">Suno Assistant Pro</h3>
+            <h3 className="text-lg font-bold text-gray-900">AI Music Pilot Pro</h3>
             <span className="text-2xl font-bold text-purple-600">$5<span className="text-sm text-gray-600">/mo</span></span>
           </div>
           <ul className="space-y-2 mb-4">

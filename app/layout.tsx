@@ -5,8 +5,8 @@ import Link from 'next/link';
 import UsageIndicator from '@/components/UsageIndicator';
 
 export const metadata: Metadata = {
-  title: 'Suno AI Music Assistant',
-  description: 'Create better music with Suno AI using intelligent prompts, structured lyrics, and optimized style descriptions',
+  title: 'AI Music Pilot',
+  description: 'Your AI Co-Pilot for Music Creation - Navigate your music journey with AI-powered lyrics, prompts, and metatags for Suno AI',
 };
 
 export default async function RootLayout({
@@ -24,7 +24,7 @@ export default async function RootLayout({
           <div className="container mx-auto px-4 py-4">
             <div className="flex justify-between items-center">
               <Link href="/" className="text-xl font-bold hover:text-purple-200 transition-colors">
-                Suno Assistant
+                AI Music Pilot
               </Link>
               <div className="flex items-center space-x-4">
                 {session ? (

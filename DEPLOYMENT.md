@@ -1,6 +1,6 @@
 # Deployment Guide for Vercel with Supabase
 
-This guide will walk you through deploying your Suno Assistant app (with Supabase authentication and database) to Vercel.
+This guide will walk you through deploying your AI Music Pilot app (with Supabase authentication and database) to Vercel.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ This guide will walk you through deploying your Suno Assistant app (with Supabas
 3. Sign in with GitHub
 4. Create a new project:
    - **Organization**: Choose or create one
-   - **Project Name**: `suno-assistant` (or any name you prefer)
+   - **Project Name**: `ai-music-pilot` (or any name you prefer)
    - **Database Password**: Generate a strong password (save it somewhere safe!)
    - **Region**: Choose closest to your target users
 5. Click "Create new project"
@@ -87,7 +87,7 @@ git push -u origin claude/prepare-for-launch-011CUvnSa5vUBMi5SDr5Lvq2
 2. Click "Add New..." → "Project"
 3. Find your repository `matjosoft/suno-assistant`
 4. Click "Import"
-5. If asked about branch, select `claude/prepare-for-launch-011CUvnSa5vUBMi5SDr5Lvq2`
+5. If asked about branch, select the appropriate branch
 
 ### 4. Configure Build Settings
 
@@ -124,7 +124,7 @@ Click "Environment Variables" section and add ALL of these:
 
 ### 6. Configure Authentication Redirect URLs
 
-After your first deployment, you'll get a Vercel URL (e.g., `https://suno-assistant.vercel.app`)
+After your first deployment, you'll get a Vercel URL (e.g., `https://ai-music-pilot.vercel.app`)
 
 1. Go back to **Supabase Dashboard** → **Authentication** → **URL Configuration**
 2. Add your Vercel URL to:
@@ -142,7 +142,7 @@ After your first deployment, you'll get a Vercel URL (e.g., `https://suno-assist
 
 ### 8. Test Your Deployment
 
-1. Visit your deployed URL (e.g., `https://suno-assistant.vercel.app`)
+1. Visit your deployed URL (e.g., `https://ai-music-pilot.vercel.app`)
 2. Test the following:
    - Click "Sign In" - you should be able to create an account
    - After signing in, create a song

@@ -1,5 +1,5 @@
 # Supabase SaaS Migration Plan
-## Suno AI Music Assistant - Complete Implementation Guide
+## AI Music Pilot - Complete Implementation Guide
 
 ---
 
@@ -18,7 +18,7 @@
 
 ## Executive Summary
 
-**Goal:** Transform the Suno Assistant from a client-side app into a multi-tenant SaaS application using Supabase.
+**Goal:** Transform AI Music Pilot from a client-side app into a multi-tenant SaaS application using Supabase.
 
 **Current State:**
 - Client-side Next.js app
@@ -159,7 +159,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-900 to-indigo-900">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl">
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign in to Suno Assistant</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Sign in to AI Music Pilot</h1>
         <Auth
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
@@ -222,7 +222,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Add navigation with login/logout */}
         <nav className="bg-indigo-900 text-white p-4">
           <div className="container mx-auto flex justify-between items-center">
-            <Link href="/">Suno Assistant</Link>
+            <Link href="/">AI Music Pilot</Link>
             <div>
               {session ? (
                 <>
@@ -1022,7 +1022,7 @@ export default async function SharedProjectPage({ params }: { params: { slug: st
     <div className="container mx-auto p-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">{project.name}</h1>
-        <p className="text-gray-600">Shared by a Suno Assistant user</p>
+        <p className="text-gray-600">Shared by an AI Music Pilot user</p>
       </div>
 
       <CustomModeOutput
@@ -1032,7 +1032,7 @@ export default async function SharedProjectPage({ params }: { params: { slug: st
       />
 
       <div className="mt-8 p-6 bg-indigo-50 rounded-lg text-center">
-        <p className="mb-4">Create your own music prompts with Suno Assistant</p>
+        <p className="mb-4">Create your own music prompts with AI Music Pilot</p>
         <Link
           href="/login"
           className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700"
