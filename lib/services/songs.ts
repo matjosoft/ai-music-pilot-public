@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { createServerClient } from '@/lib/supabase/server'
-import type { Song, SongStructure } from '@/types'
+import type { Song, SongStructure, Database } from '@/types'
 
 export class SongService {
   // Client-side methods
@@ -42,14 +42,17 @@ export class SongService {
 
     if (!user) throw new Error('Not authenticated')
 
+    // Explicitly type the insert payload to fix TypeScript inference issues
+    const insertData: Database['public']['Tables']['songs']['Insert'] = {
+      user_id: user.id,
+      name,
+      mode,
+      songs: songs as any // Cast to Json type for database storage
+    }
+
     const { data, error } = await supabase
       .from('songs')
-      .insert({
-        user_id: user.id,
-        name,
-        mode,
-        songs
-      })
+      .insert(insertData)
       .select()
       .single()
 
@@ -94,14 +97,17 @@ export class SongService {
   ): Promise<Song> {
     const supabase = createServerClient()
 
+    // Explicitly type the insert payload to fix TypeScript inference issues
+    const insertData: Database['public']['Tables']['songs']['Insert'] = {
+      user_id: userId,
+      name,
+      mode,
+      songs: songs as any // Cast to Json type for database storage
+    }
+
     const { data, error } = await supabase
       .from('songs')
-      .insert({
-        user_id: userId,
-        name,
-        mode,
-        songs
-      })
+      .insert(insertData)
       .select()
       .single()
 
