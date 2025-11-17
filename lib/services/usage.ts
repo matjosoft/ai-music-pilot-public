@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
-import type { UsageLog, UsageActionType, UsageCheckResult, UsageStats } from '@/types'
+import type { UsageLog, UsageActionType, UsageCheckResult, UsageStats, Database } from '@/types'
 import { SubscriptionService } from './subscriptions'
 
 export class UsageService {
@@ -55,15 +55,19 @@ export class UsageService {
   ): Promise<UsageLog> {
     const supabase = createServiceRoleClient()
 
+    // Explicitly type the insert payload to fix TypeScript inference issues
+    const insertData: Database['public']['Tables']['usage_logs']['Insert'] = {
+      user_id: userId,
+      action_type: actionType,
+      song_id: songId || null,
+      tokens_used: metadata?.tokensUsed || null,
+      model_used: metadata?.modelUsed || null,
+    }
+
     const { data, error } = await supabase
       .from('usage_logs')
-      .insert({
-        user_id: userId,
-        action_type: actionType,
-        song_id: songId || null,
-        tokens_used: metadata?.tokensUsed || null,
-        model_used: metadata?.modelUsed || null,
-      })
+      // @ts-expect-error - Type inference issue with auth-helpers-nextjs 0.10.0
+      .insert(insertData)
       .select()
       .single()
 
