@@ -10,7 +10,10 @@ import Stripe from 'stripe'
  * Important: This route must have raw body access for signature verification
  */
 export async function POST(request: NextRequest) {
-  const body = await request.text()
+  // Read body as raw buffer to preserve exact bytes for signature verification
+  // Using arrayBuffer() instead of text() prevents any encoding modifications
+  const rawBody = await request.arrayBuffer()
+  const body = Buffer.from(rawBody).toString('utf8')
   const signature = request.headers.get('stripe-signature')
 
   if (!signature) {
