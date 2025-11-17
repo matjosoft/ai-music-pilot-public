@@ -17,6 +17,17 @@ export default function UsageIndicator() {
 
   useEffect(() => {
     fetchUsage()
+
+    // Listen for usage update events
+    const handleUsageUpdate = () => {
+      fetchUsage()
+    }
+
+    window.addEventListener('usageUpdated', handleUsageUpdate)
+
+    return () => {
+      window.removeEventListener('usageUpdated', handleUsageUpdate)
+    }
   }, [])
 
   const fetchUsage = async () => {
