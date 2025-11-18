@@ -72,6 +72,8 @@ export default function SongPage({ params }: { params: { id: string } }) {
       const data = await response.json();
       if (data.success && data.song) {
         setSong(data.song);
+        // Dispatch event to update usage counter
+        window.dispatchEvent(new Event('usageUpdated'));
       }
     } catch (err) {
       console.error('Error regenerating lyrics:', err);
@@ -108,6 +110,8 @@ export default function SongPage({ params }: { params: { id: string } }) {
       const data = await response.json();
       if (data.success && data.song) {
         setSong(data.song);
+        // Dispatch event to update usage counter
+        window.dispatchEvent(new Event('usageUpdated'));
       }
     } catch (err) {
       console.error('Error regenerating metatags:', err);

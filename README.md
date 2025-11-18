@@ -72,6 +72,19 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `ANTHROPIC_API_KEY` | Yes (if using Anthropic) | - | Your Anthropic API key |
 | `OPENAI_API_KEY` | Yes (if using OpenAI) | - | Your OpenAI API key |
 | `OPENAI_MODEL` | No | `gpt-4-turbo-preview` | OpenAI model to use |
+| `NEXT_PUBLIC_SUPABASE_URL` | **Yes** | - | Your Supabase project URL (from project settings) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Yes** | - | Your Supabase anonymous key (from project settings) |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Yes** | - | Your Supabase service role key - **CRITICAL** for usage tracking and subscriptions |
+
+### Supabase Configuration
+
+All three Supabase environment variables are **required** for the application to function properly:
+
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Get these from your [Supabase project settings](https://app.supabase.com/project/_/settings/api)
+- `SUPABASE_SERVICE_ROLE_KEY`: Also available in project settings under "service_role key"
+  - ⚠️ **WARNING**: This key bypasses Row-Level Security. Never expose it to the client or commit it to version control!
+  - This key is essential for server-side operations like logging usage and managing subscriptions
+  - **Without this key, the song counter will not decrease after generation** due to failed usage logging
 
 ## Build for Production
 

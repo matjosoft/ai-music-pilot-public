@@ -78,6 +78,9 @@ export default function CreatePage() {
         throw new Error('Invalid response from server');
       }
 
+      // Dispatch event to update usage counter
+      window.dispatchEvent(new Event('usageUpdated'));
+
       // Redirect to song view page
       router.push(`/song/${data.song.id}`);
     } catch (err) {

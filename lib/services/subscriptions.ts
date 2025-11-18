@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
-import type { UserSubscription, SubscriptionTier, UsageCheckResult, UsageStats } from '@/types'
+import type { UserSubscription, SubscriptionTier, UsageCheckResult, UsageStats, Database } from '@/types'
 
 export class SubscriptionService {
   // Client-side methods
@@ -108,17 +108,21 @@ export class SubscriptionService {
     const periodEnd = new Date(now)
     periodEnd.setDate(periodEnd.getDate() + 30) // 30 days from now
 
+    // Explicitly type the insert payload to fix TypeScript inference issues
+    const insertData: Database['public']['Tables']['user_subscriptions']['Insert'] = {
+      user_id: userId,
+      tier,
+      generation_limit: generationLimit,
+      current_period_start: now.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+      trial_ends_at: options?.trialEndsAt?.toISOString() || null,
+      is_test_user: options?.isTestUser || false,
+    }
+
     const { data, error } = await supabase
       .from('user_subscriptions')
-      .insert({
-        user_id: userId,
-        tier,
-        generation_limit: generationLimit,
-        current_period_start: now.toISOString(),
-        current_period_end: periodEnd.toISOString(),
-        trial_ends_at: options?.trialEndsAt?.toISOString() || null,
-        is_test_user: options?.isTestUser || false,
-      })
+      // @ts-expect-error - Type inference issue with auth-helpers-nextjs 0.10.0
+      .insert(insertData)
       .select()
       .single()
 
@@ -138,6 +142,7 @@ export class SubscriptionService {
 
     const { data, error } = await supabase
       .from('user_subscriptions')
+      // @ts-expect-error - Type inference issue with auth-helpers-nextjs 0.10.0
       .update(updates)
       .eq('user_id', userId)
       .select()

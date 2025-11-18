@@ -3,6 +3,9 @@ import { stripe } from '@/lib/stripe'
 import { SubscriptionService } from '@/lib/services/subscriptions'
 import Stripe from 'stripe'
 
+// Configure route to handle raw request bodies for webhook signature verification
+export const runtime = 'nodejs'
+
 /**
  * POST /api/stripe/webhook
  * Handle Stripe webhook events
@@ -10,7 +13,12 @@ import Stripe from 'stripe'
  * Important: This route must have raw body access for signature verification
  */
 export async function POST(request: NextRequest) {
-  const body = await request.text()
+  // Read body as raw buffer to preserve exact bytes for signature verification
+  // Using arrayBuffer() instead of text() prevents any encoding modifications
+  const rawBody = await request.arrayBuffer()
+  // Pass the raw Buffer directly to Stripe - do NOT convert to string
+  // Converting to string can cause encoding issues that break signature verification
+  const body = Buffer.from(rawBody)
   const signature = request.headers.get('stripe-signature')
 
   if (!signature) {
@@ -33,7 +41,7 @@ export async function POST(request: NextRequest) {
   let event: Stripe.Event
 
   try {
-    // Verify webhook signature
+    // Verify webhook signature - pass Buffer directly, not string
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (error) {
     console.error('Webhook signature verification failed:', error)
