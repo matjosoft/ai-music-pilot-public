@@ -14,13 +14,21 @@ export const runtime = 'nodejs'
  * Important: This route must have raw body access for signature verification
  */
 export async function POST(req: Request) {
+  console.log('🔔 Webhook received')
   let event: Stripe.Event
 
   try {
     // Get the signature from headers
     const signature = (await headers()).get('stripe-signature')
+    console.log('📝 Signature present:', signature ? 'YES' : 'NO')
+
+    if (signature) {
+      // Log signature parts (first 20 chars only for security)
+      console.log('📝 Signature preview:', signature.substring(0, 50) + '...')
+    }
 
     if (!signature) {
+      console.error('❌ No signature found in headers')
       return NextResponse.json(
         { error: 'No signature found' },
         { status: 400 }
@@ -30,20 +38,29 @@ export async function POST(req: Request) {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
     if (!webhookSecret) {
-      console.error('STRIPE_WEBHOOK_SECRET is not set')
+      console.error('❌ STRIPE_WEBHOOK_SECRET is not set')
       return NextResponse.json(
         { error: 'Webhook secret not configured' },
         { status: 500 }
       )
     }
 
+    console.log('🔑 Webhook secret configured:', webhookSecret.substring(0, 20) + '...')
+
+    // Read the body as text
+    const body = await req.text()
+    console.log('📦 Body length:', body.length)
+    console.log('📦 Body preview (first 100 chars):', body.substring(0, 100))
+    console.log('📦 Body type:', typeof body)
+
     // Verify webhook signature and construct event
-    // Read the body only once as text and pass directly to constructEvent
+    console.log('🔐 Attempting signature verification...')
     event = stripe.webhooks.constructEvent(
-      await req.text(),
+      body,
       signature,
       webhookSecret
     )
+    console.log('✅ Signature verified successfully!')
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Webhook signature verification failed:', errorMessage)
