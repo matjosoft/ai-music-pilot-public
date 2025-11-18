@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
   // Converting to string can cause encoding issues that break signature verification
   const body = Buffer.from(rawBody)
   const signature = request.headers.get('stripe-signature')
+  const req_text = await request.text()
 
   if (!signature) {
     return NextResponse.json(
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
 
   try {
     // Verify webhook signature - pass Buffer directly, not string
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+    event = stripe.webhooks.constructEvent(req_text, signature, webhookSecret)
   } catch (error) {
     console.error('Webhook signature verification failed:', error)
     return NextResponse.json(
