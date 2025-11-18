@@ -221,13 +221,9 @@ export async function initializeUserSubscription(
         generationLimit: -1, // unlimited
       })
     } else {
-      // Give new users a 30-day trial of Pro
-      const trialEndsAt = new Date()
-      trialEndsAt.setDate(trialEndsAt.getDate() + 30)
-
-      await SubscriptionService.createSubscriptionServer(userId, 'pro', {
-        generationLimit: 100,
-        trialEndsAt,
+      // Create free tier subscription for new users
+      await SubscriptionService.createSubscriptionServer(userId, 'free', {
+        generationLimit: 5,
       })
     }
   } catch (error) {
