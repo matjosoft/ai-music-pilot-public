@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Music, Sparkles, ArrowRight, Shield, DollarSign, Youtube, Zap } from 'lucide-react';
+import Image from 'next/image';
+import { Sparkles, ArrowRight, Shield, DollarSign, Youtube, Zap } from 'lucide-react';
 import { createServerClient } from '@/lib/supabase/server';
 
 export default async function Home() {
@@ -16,8 +17,14 @@ export default async function Home() {
           {/* Hero Section */}
           <div className="mb-20 text-center">
             <div className="flex justify-center mb-8">
-              <div className="bg-gradient-to-br from-neon-purple via-neon-magenta to-neon-cyan p-6 rounded-full shadow-neon-purple">
-                <Music className="w-20 h-20 text-white" />
+              <div className="relative w-48 h-48 md:w-64 md:h-64">
+                <Image
+                  src="/assets/logo.png"
+                  alt="AiMP Logo"
+                  fill
+                  className="object-contain drop-shadow-2xl"
+                  priority
+                />
               </div>
             </div>
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-white mb-6 tracking-tight">
