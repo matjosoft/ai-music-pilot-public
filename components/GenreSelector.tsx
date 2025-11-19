@@ -61,9 +61,9 @@ export default function GenreSelector({ value, onChange, className = '' }: Genre
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-left flex items-center justify-between hover:border-gray-400 transition-colors"
+        className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple text-left flex items-center justify-between hover:border-neon-purple/50 transition-colors"
       >
-        <span className={value ? 'text-gray-900' : 'text-gray-400'}>
+        <span className={value ? 'text-white' : 'text-gray-500'}>
           {value || 'Select a genre...'}
         </span>
         <ChevronDown
@@ -75,9 +75,9 @@ export default function GenreSelector({ value, onChange, className = '' }: Genre
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-hidden flex flex-col">
+        <div className="absolute z-50 w-full mt-2 bg-dark-card border border-gray-700 rounded-lg shadow-2xl max-h-96 overflow-hidden flex flex-col">
           {/* Search input */}
-          <div className="p-3 border-b border-gray-200 bg-gray-50">
+          <div className="p-3 border-b border-gray-700 bg-dark-lighter">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -86,13 +86,13 @@ export default function GenreSelector({ value, onChange, className = '' }: Genre
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search genres..."
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                className="w-full pl-10 pr-10 py-2 bg-dark-bg border border-gray-700 text-white rounded-md focus:ring-2 focus:ring-neon-purple focus:border-neon-purple text-sm placeholder-gray-500"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-neon-purple"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -104,9 +104,9 @@ export default function GenreSelector({ value, onChange, className = '' }: Genre
           <div className="overflow-y-auto">
             {filteredCategories.length > 0 ? (
               filteredCategories.map((category) => (
-                <div key={category.name} className="border-b border-gray-100 last:border-b-0">
+                <div key={category.name} className="border-b border-gray-800 last:border-b-0">
                   {/* Category header */}
-                  <div className="px-4 py-2 bg-gray-50 font-semibold text-sm text-gray-700 sticky top-0">
+                  <div className="px-4 py-2 bg-dark-lighter font-semibold text-sm text-neon-purple sticky top-0">
                     {category.name}
                   </div>
                   {/* Genre items */}
@@ -116,10 +116,10 @@ export default function GenreSelector({ value, onChange, className = '' }: Genre
                         key={genre}
                         type="button"
                         onClick={() => handleGenreSelect(genre)}
-                        className={`w-full text-left px-6 py-2 text-sm hover:bg-blue-50 transition-colors ${
+                        className={`w-full text-left px-6 py-2 text-sm hover:bg-neon-purple/10 transition-colors ${
                           value === genre
-                            ? 'bg-blue-100 text-blue-700 font-medium'
-                            : 'text-gray-700'
+                            ? 'bg-neon-purple/20 text-neon-purple font-medium'
+                            : 'text-gray-300'
                         }`}
                       >
                         {highlightMatch(genre, searchQuery)}
@@ -129,7 +129,7 @@ export default function GenreSelector({ value, onChange, className = '' }: Genre
                 </div>
               ))
             ) : (
-              <div className="px-4 py-8 text-center text-gray-500 text-sm">
+              <div className="px-4 py-8 text-center text-gray-400 text-sm">
                 No genres found matching "{searchQuery}"
               </div>
             )}
@@ -151,7 +151,7 @@ function highlightMatch(text: string, query: string) {
     <>
       {parts.map((part, index) =>
         part.toLowerCase() === query.toLowerCase() ? (
-          <mark key={index} className="bg-yellow-200 font-semibold">
+          <mark key={index} className="bg-neon-cyan/30 text-neon-cyan font-semibold">
             {part}
           </mark>
         ) : (

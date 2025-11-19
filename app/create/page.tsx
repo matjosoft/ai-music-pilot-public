@@ -99,41 +99,41 @@ export default function CreatePage() {
         remaining={usageInfo?.remaining || 0}
         limit={usageInfo?.limit || 5}
       />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12">
+      <div className="min-h-screen bg-dark-bg py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <Link
               href="/"
-              className="inline-flex items-center text-primary hover:text-blue-600 mb-4 transition-colors"
+              className="inline-flex items-center text-neon-purple hover:text-neon-cyan mb-4 transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Your Song</h1>
-            <p className="text-gray-600">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">Create Your Song</h1>
+            <p className="text-gray-400 text-lg">
               Describe your music vision and let AI generate structured lyrics and style for Suno
             </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <div className="mb-6 bg-red-900/30 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
 
           {/* Mode Selector */}
-          <div className="mb-6 bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Creation Mode</h2>
+          <div className="mb-6 bg-dark-card p-6 rounded-2xl shadow-xl border border-gray-800">
+            <h2 className="text-lg font-semibold text-white mb-4">Choose Your Creation Mode</h2>
             <div className="flex space-x-4">
               <button
                 onClick={() => setSelectedMode('custom')}
-                className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all ${
                   selectedMode === 'custom'
-                    ? 'bg-primary text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-neon-purple to-neon-magenta text-white shadow-neon-purple'
+                    : 'bg-dark-lighter text-gray-300 hover:bg-dark-lighter/80 border border-gray-700'
                 }`}
               >
                 <div className="text-center">
@@ -145,10 +145,10 @@ export default function CreatePage() {
               </button>
               <button
                 onClick={() => setSelectedMode('artist')}
-                className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all ${
                   selectedMode === 'artist'
-                    ? 'bg-primary text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-neon-purple to-neon-magenta text-white shadow-neon-purple'
+                    : 'bg-dark-lighter text-gray-300 hover:bg-dark-lighter/80 border border-gray-700'
                 }`}
               >
                 <div className="text-center">
