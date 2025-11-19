@@ -17,14 +17,16 @@ export default async function Home() {
           {/* Hero Section */}
           <div className="mb-20 text-center">
             <div className="flex justify-center mb-8">
-              <div className="relative w-48 h-48 md:w-64 md:h-64">
-                <Image
-                  src="/assets/aimp-logo.png"
-                  alt="AiMP - AI Music Pilot Logo"
-                  fill
-                  className="object-contain drop-shadow-2xl"
-                  priority
-                />
+              <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-white/95 via-gray-50/90 to-white/95 p-4 shadow-2xl ring-4 ring-neon-purple/20 hover:ring-neon-purple/40 transition-all duration-300">
+                <div className="relative w-full h-full">
+                  <Image
+                    src="/assets/aimp-logo.png"
+                    alt="AiMP - AI Music Pilot Logo"
+                    fill
+                    className="object-contain"
+                    priority
+                  />
+                </div>
               </div>
             </div>
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-white mb-6 tracking-tight">
