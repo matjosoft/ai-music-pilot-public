@@ -30,17 +30,17 @@ export default function ArtistModeForm({ onGenerate, isLoading }: ArtistModeForm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-lg shadow-lg">
-      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-sm text-blue-800">
-          <strong>Artist Mode:</strong> Simply provide a song title and artist name.
+    <form onSubmit={handleSubmit} className="space-y-6 bg-dark-card p-8 rounded-2xl shadow-xl border border-gray-800">
+      <div className="mb-4 p-4 bg-neon-cyan/10 border border-neon-cyan/30 rounded-lg">
+        <p className="text-sm text-gray-300">
+          <strong className="text-neon-cyan">Artist Mode:</strong> Simply provide a song title and artist name.
           The AI will automatically generate lyrics and style that match the artist&apos;s signature sound.
         </p>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="songName" className="block text-sm font-medium text-gray-700">
-          Song Title <span className="text-red-500">*</span>
+        <label htmlFor="songName" className="block text-sm font-medium text-white">
+          Song Title <span className="text-red-400">*</span>
         </label>
         <input
           id="songName"
@@ -48,14 +48,14 @@ export default function ArtistModeForm({ onGenerate, isLoading }: ArtistModeForm
           value={formData.songName}
           onChange={(e) => setFormData({ ...formData, songName: e.target.value })}
           placeholder="e.g., Lost in the Echo"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple placeholder-gray-500"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="artistName" className="block text-sm font-medium text-gray-700">
-          Artist Name <span className="text-red-500">*</span>
+        <label htmlFor="artistName" className="block text-sm font-medium text-white">
+          Artist Name <span className="text-red-400">*</span>
         </label>
         <input
           id="artistName"
@@ -63,31 +63,31 @@ export default function ArtistModeForm({ onGenerate, isLoading }: ArtistModeForm
           value={formData.artistName}
           onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
           placeholder="e.g., Taylor Swift, The Beatles, Ed Sheeran..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple placeholder-gray-500"
           required
         />
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-400">
           The AI will analyze this artist&apos;s style and create a song that captures their musical essence.
         </p>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="wordDensity" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="wordDensity" className="block text-sm font-medium text-white">
           Word Density
         </label>
         <select
           id="wordDensity"
           value={formData.wordDensity}
           onChange={(e) => setFormData({ ...formData, wordDensity: e.target.value as any })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple"
         >
           {WORD_DENSITIES.map((density) => (
-            <option key={density.value} value={density.value}>
+            <option key={density.value} value={density.value} className="bg-dark-lighter text-white">
               {density.label} - {density.description}
             </option>
           ))}
         </select>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-400">
           Controls how many words are used per line. Sparse creates powerful impact, dense creates elaborate lyrics.
         </p>
       </div>
@@ -95,7 +95,7 @@ export default function ArtistModeForm({ onGenerate, isLoading }: ArtistModeForm
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-primary hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-gradient-to-r from-neon-purple to-neon-magenta hover:from-neon-magenta hover:to-neon-cyan text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-neon-purple disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <>
