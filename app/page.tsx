@@ -19,8 +19,8 @@ export default async function Home() {
             <div className="flex justify-center mb-8">
               <div className="relative w-48 h-48 md:w-64 md:h-64">
                 <Image
-                  src="/assets/logo.png"
-                  alt="AiMP Logo"
+                  src="/assets/aimp-logo.png"
+                  alt="AiMP - AI Music Pilot Logo"
                   fill
                   className="object-contain drop-shadow-2xl"
                   priority
