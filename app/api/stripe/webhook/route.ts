@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { SubscriptionService } from '@/lib/services/subscriptions'
 import Stripe from 'stripe'
@@ -12,42 +13,59 @@ export const runtime = 'nodejs'
  *
  * Important: This route must have raw body access for signature verification
  */
-export async function POST(request: NextRequest) {
-  // Read body as raw buffer to preserve exact bytes for signature verification
-  // Using arrayBuffer() instead of text() prevents any encoding modifications
-  const rawBody = await request.arrayBuffer()
-  // Pass the raw Buffer directly to Stripe - do NOT convert to string
-  // Converting to string can cause encoding issues that break signature verification
-  const body = Buffer.from(rawBody)
-  const signature = request.headers.get('stripe-signature')
-  const req_text = await request.text()
-
-  if (!signature) {
-    return NextResponse.json(
-      { error: 'No signature found' },
-      { status: 400 }
-    )
-  }
-
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-
-  if (!webhookSecret) {
-    console.error('STRIPE_WEBHOOK_SECRET is not set')
-    return NextResponse.json(
-      { error: 'Webhook secret not configured' },
-      { status: 500 }
-    )
-  }
-
+export async function POST(req: Request) {
+  console.log('🔔 Webhook received')
   let event: Stripe.Event
 
   try {
-    // Verify webhook signature - pass Buffer directly, not string
-    event = stripe.webhooks.constructEvent(req_text, signature, webhookSecret)
+    // Get the signature from headers
+    const signature = (await headers()).get('stripe-signature')
+    console.log('📝 Signature present:', signature ? 'YES' : 'NO')
+
+    if (signature) {
+      // Log signature parts (first 20 chars only for security)
+      console.log('📝 Signature preview:', signature.substring(0, 50) + '...')
+    }
+
+    if (!signature) {
+      console.error('❌ No signature found in headers')
+      return NextResponse.json(
+        { error: 'No signature found' },
+        { status: 400 }
+      )
+    }
+
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+    if (!webhookSecret) {
+      console.error('❌ STRIPE_WEBHOOK_SECRET is not set')
+      return NextResponse.json(
+        { error: 'Webhook secret not configured' },
+        { status: 500 }
+      )
+    }
+
+    console.log('🔑 Webhook secret configured:', webhookSecret.substring(0, 20) + '...')
+
+    // Read the body as text
+    const body = await req.text()
+    console.log('📦 Body length:', body.length)
+    console.log('📦 Body preview (first 100 chars):', body.substring(0, 100))
+    console.log('📦 Body type:', typeof body)
+
+    // Verify webhook signature and construct event
+    console.log('🔐 Attempting signature verification...')
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      webhookSecret
+    )
+    console.log('✅ Signature verified successfully!')
   } catch (error) {
-    console.error('Webhook signature verification failed:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Webhook signature verification failed:', errorMessage)
     return NextResponse.json(
-      { error: 'Invalid signature' },
+      { error: `Webhook Error: ${errorMessage}` },
       { status: 400 }
     )
   }

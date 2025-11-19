@@ -123,10 +123,10 @@ export default function SongPage({ params }: { params: { id: string } }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-gray-600">Loading song...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-neon-purple mx-auto mb-4" />
+          <p className="text-gray-400">Loading song...</p>
         </div>
       </div>
     );
@@ -134,14 +134,14 @@ export default function SongPage({ params }: { params: { id: string } }) {
 
   if (error || !song) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12">
+      <div className="min-h-screen bg-dark-bg py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Error</h1>
-            <p className="text-red-600 mb-6">{error || 'Song not found'}</p>
+            <h1 className="text-3xl font-bold text-white mb-4">Error</h1>
+            <p className="text-red-400 mb-6">{error || 'Song not found'}</p>
             <Link
               href="/create"
-              className="inline-block bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+              className="inline-block bg-gradient-to-r from-neon-purple to-neon-magenta hover:from-neon-magenta hover:to-neon-cyan text-white px-6 py-3 rounded-xl transition-all duration-300 shadow-neon-purple font-medium"
             >
               Create New Song
             </Link>
@@ -152,21 +152,21 @@ export default function SongPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12">
+    <div className="min-h-screen bg-dark-bg py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <Link
               href="/dashboard"
-              className="inline-flex items-center text-primary hover:text-blue-600 mb-4 transition-colors"
+              className="inline-flex items-center text-neon-purple hover:text-neon-cyan mb-4 transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to My Songs
             </Link>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">{song.name}</h1>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-medium">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">{song.name}</h1>
+            <div className="flex items-center gap-4 text-sm text-gray-400">
+              <span className="bg-neon-purple/20 text-neon-purple px-3 py-1 rounded-full font-medium border border-neon-purple/30">
                 {song.mode}
               </span>
               <span>
@@ -177,7 +177,7 @@ export default function SongPage({ params }: { params: { id: string } }) {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <div className="mb-6 bg-red-900/30 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
@@ -197,7 +197,7 @@ export default function SongPage({ params }: { params: { id: string } }) {
               isRegenerating={isRegenerating}
             />
           ) : (
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-6 py-4 rounded-lg">
+            <div className="bg-yellow-900/30 border border-yellow-500/50 text-yellow-200 px-6 py-4 rounded-lg">
               <p className="font-semibold mb-2">No content found for this song</p>
               <p className="text-sm">
                 This song doesn't contain any generated content. This might be due to an error during generation.

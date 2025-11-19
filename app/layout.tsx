@@ -19,30 +19,30 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
-        <nav className="bg-gradient-to-r from-indigo-900 to-purple-900 text-white shadow-lg">
+      <body className="font-sans antialiased bg-dark-bg">
+        <nav className="bg-dark-card/95 backdrop-blur-sm text-white shadow-xl border-b border-neon-purple/20">
           <div className="container mx-auto px-4 py-4">
             <div className="flex justify-between items-center">
-              <Link href="/" className="text-xl font-bold hover:text-purple-200 transition-colors">
+              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-neon-purple via-neon-magenta to-neon-cyan bg-clip-text text-transparent hover:opacity-80 transition-opacity">
                 AI Music Pilot
               </Link>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-6">
                 {session ? (
                   <>
-                    <Link href="/dashboard" className="hover:text-purple-200 transition-colors">
+                    <Link href="/dashboard" className="hover:text-neon-purple transition-colors font-medium">
                       My Songs
                     </Link>
-                    <Link href="/create" className="hover:text-purple-200 transition-colors">
+                    <Link href="/create" className="hover:text-neon-cyan transition-colors font-medium">
                       Create
                     </Link>
                     <UsageIndicator />
-                    <span className="text-purple-200">
+                    <span className="text-gray-400 text-sm">
                       {session.user.email}
                     </span>
                     <form action="/logout" method="POST">
                       <button
                         type="submit"
-                        className="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded-lg transition-colors"
+                        className="bg-gradient-to-r from-neon-purple to-neon-magenta hover:from-neon-magenta hover:to-neon-cyan px-4 py-2 rounded-lg transition-all duration-300 font-medium"
                       >
                         Logout
                       </button>
@@ -51,7 +51,7 @@ export default async function RootLayout({
                 ) : (
                   <Link
                     href="/login"
-                    className="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded-lg transition-colors"
+                    className="bg-gradient-to-r from-neon-purple to-neon-magenta hover:from-neon-magenta hover:to-neon-cyan px-6 py-2 rounded-lg transition-all duration-300 font-bold shadow-neon-purple hover:shadow-neon-magenta"
                   >
                     Login
                   </Link>
