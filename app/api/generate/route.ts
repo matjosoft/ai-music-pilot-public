@@ -4,6 +4,9 @@ import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt } from '
 import { createServerClient } from '@/lib/supabase/server';
 import { SongService } from '@/lib/services/songs';
 import { checkUsageLimit, logUsage, getUsageForResponse } from '@/lib/utils/usage-checker';
+import { rateLimit, RateLimitPresets, getRateLimitHeaders } from '@/lib/utils/rate-limit';
+import { logger } from '@/lib/utils/logger';
+import { validateSongGeneration } from '@/lib/utils/validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,82 +21,93 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Check usage limit
+    // 2. Check rate limit (prevent rapid-fire requests)
+    const rateLimitResult = rateLimit(user.id, RateLimitPresets.AI_GENERATION)
+    if (!rateLimitResult.success) {
+      logger.security('rate_limit_exceeded', {
+        userId: user.id,
+        endpoint: '/api/generate',
+        resetAt: new Date(rateLimitResult.reset).toISOString()
+      })
+
+      return NextResponse.json(
+        {
+          error: 'Too many requests. Please try again later.',
+          code: 'RATE_LIMIT_EXCEEDED',
+          resetAt: rateLimitResult.reset,
+        },
+        {
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult),
+        }
+      )
+    }
+
+    // 3. Check usage limit (monthly quota)
     const usageCheck = await checkUsageLimit(user.id)
     if (!usageCheck.allowed && usageCheck.response) {
       return usageCheck.response
     }
 
-    // 3. Parse request body
+    // 4. Parse and validate request body
     const body = await request.json();
-    const { songName, mode, vision, genre, mood, tempo, wordDensity, title, artistName, instrumental } = body;
 
-    // 4. Validate song name
-    if (!songName) {
+    // 5. Validate and sanitize all inputs
+    const validation = validateSongGeneration(body)
+    if (!validation.isValid) {
+      logger.warn('Invalid song generation input:', validation.errors)
       return NextResponse.json(
-        { error: 'Song name is required' },
+        {
+          error: 'Invalid input',
+          details: validation.errors
+        },
         { status: 400 }
       )
     }
+
+    const { songName, mode, vision, genre, mood, tempo, wordDensity, title, artistName, instrumental } = validation.data!
 
     let userPrompt: string;
 
     // Handle artist mode
     if (mode === 'artist') {
-      // Validate artist mode input
-      if (!title || !artistName) {
-        return NextResponse.json(
-          { error: 'Missing required fields: title and artistName are required for artist mode' },
-          { status: 400 }
-        );
-      }
-
       // Generate user prompt for artist mode
-      userPrompt = generateArtistModePrompt(title, artistName, wordDensity || 'medium');
+      userPrompt = generateArtistModePrompt(title!, artistName!, wordDensity || 'medium');
     } else {
-      // Handle custom mode (existing logic)
-      // Validate input
-      if (!vision || !genre || !mood || !tempo) {
-        return NextResponse.json(
-          { error: 'Missing required fields' },
-          { status: 400 }
-        );
-      }
-
-      // Generate user prompt
-      userPrompt = generateProjectPrompt(vision, genre, mood, tempo, wordDensity || 'medium', instrumental || false);
+      // Generate user prompt for custom mode
+      userPrompt = generateProjectPrompt(vision!, genre!, mood!, tempo!, wordDensity || 'medium', instrumental || false);
     }
 
-    // 5. Call AI API (supports both Anthropic and OpenAI)
+    // 6. Call AI API (supports both Anthropic and OpenAI)
     const response = await generateAIResponse({
       systemPrompt: SYSTEM_PROMPT,
       userPrompt,
     });
 
-    // 6. Parse JSON response
+    // 7. Parse JSON response
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(response.content);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', response.content);
+      logger.error('Failed to parse AI response:', response.content);
       return NextResponse.json(
         { error: 'Invalid response format from AI' },
         { status: 500 }
       );
     }
 
-    // 7. Validate parsed response has songs
+    // 8. Validate parsed response has songs
     if (!parsedResponse.songs || !Array.isArray(parsedResponse.songs) || parsedResponse.songs.length === 0) {
-      console.error('Invalid AI response - missing songs:', parsedResponse);
+      logger.error('Invalid AI response - missing songs:', parsedResponse);
       return NextResponse.json(
         { error: 'AI response did not contain valid songs' },
         { status: 500 }
       );
     }
 
-    console.log('Creating song with content:', parsedResponse.songs);
+    logger.debug('Creating song with content:', parsedResponse.songs);
 
-    // 8. Save to Supabase
+    // 9. Save to Supabase
     const song = await SongService.createSongServer(
       user.id,
       songName,
@@ -101,22 +115,27 @@ export async function POST(request: NextRequest) {
       parsedResponse.songs
     )
 
-    console.log('Created song:', song);
+    logger.debug('Created song:', song);
 
-    // 9. Log usage
+    // 10. Log usage
     await logUsage(user.id, 'generate', song.id)
 
-    // 10. Get updated usage stats
+    // 11. Get updated usage stats
     const usage = await getUsageForResponse(user.id)
 
-    // 11. Return song with ID and usage stats
-    return NextResponse.json({
-      success: true,
-      song,
-      usage
-    });
+    // 12. Return song with ID, usage stats, and rate limit headers
+    return NextResponse.json(
+      {
+        success: true,
+        song,
+        usage
+      },
+      {
+        headers: getRateLimitHeaders(rateLimitResult)
+      }
+    );
   } catch (error) {
-    console.error('Error generating song:', error);
+    logger.error('Error generating song:', error);
     return NextResponse.json(
       { error: 'Failed to generate song' },
       { status: 500 }
