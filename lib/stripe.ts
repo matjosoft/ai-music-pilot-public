@@ -1,16 +1,24 @@
 import Stripe from 'stripe'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing STRIPE_SECRET_KEY environment variable')
-}
-
 /**
- * Stripe client instance
+ * Stripe client instance (lazy initialization)
  * Used for server-side Stripe operations
  */
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-  typescript: true,
+let stripeInstance: Stripe | null = null
+
+export const stripe = new Proxy({} as Stripe, {
+  get: (target, prop) => {
+    if (!stripeInstance) {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        throw new Error('Missing STRIPE_SECRET_KEY environment variable')
+      }
+      stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2023-10-16',
+        typescript: true,
+      })
+    }
+    return (stripeInstance as any)[prop]
+  }
 })
 
 /**

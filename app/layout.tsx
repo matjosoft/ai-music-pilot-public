@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description: 'Your AI Co-Pilot for Music Creation - Navigate your music journey with AI-powered lyrics, prompts, and metatags for Suno AI',
 };
 
+// Force dynamic rendering to avoid build-time Supabase client initialization
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
 }: {
