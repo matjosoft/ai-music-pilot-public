@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { UsageService } from '@/lib/services/usage'
 import { SubscriptionService } from '@/lib/services/subscriptions'
 import type { UsageActionType, UsageCheckResult } from '@/types'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * Check if a user can perform an action and return appropriate response
@@ -65,7 +66,7 @@ export async function checkUsageLimit(userId: string): Promise<UsageCheckRespons
       result,
     }
   } catch (error) {
-    console.error('Error checking usage limit:', error)
+    logger.error('Error checking usage limit:', error)
     return {
       allowed: false,
       result: {
@@ -101,7 +102,7 @@ export async function logUsage(
     await UsageService.logUsage(userId, actionType, songId, metadata)
   } catch (error) {
     // Log error but don't throw - we don't want to fail the request if logging fails
-    console.error('Error logging usage:', error)
+    logger.error('Error logging usage:', error)
   }
 }
 
@@ -125,7 +126,7 @@ export async function getUsageForResponse(userId: string): Promise<{
       isTestUser: stats.isTestUser,
     }
   } catch (error) {
-    console.error('Error getting usage stats:', error)
+    logger.error('Error getting usage stats:', error)
     return {
       remaining: 0,
       limit: 0,
@@ -182,7 +183,7 @@ export async function withUsageTracking<T>(
       usage,
     })
   } catch (error) {
-    console.error('Error in withUsageTracking:', error)
+    logger.error('Error in withUsageTracking:', error)
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'An error occurred',
@@ -201,8 +202,10 @@ export async function initializeUserSubscription(
   email?: string
 ): Promise<void> {
   try {
-    // Check if this is the test user
-    const isTestUser = email === 'matjosoft@gmail.com'
+    // Check if this is a test user (configured via environment variable)
+    // TEST_USER_EMAILS should be a comma-separated list of email addresses
+    const testUserEmails = (process.env.TEST_USER_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean)
+    const isTestUser = email ? testUserEmails.includes(email) : false
 
     // Check if subscription already exists
     const existing = await SubscriptionService.getSubscriptionServer(userId)
@@ -227,7 +230,7 @@ export async function initializeUserSubscription(
       })
     }
   } catch (error) {
-    console.error('Error initializing user subscription:', error)
+    logger.error('Error initializing user subscription:', error)
     // Don't throw - we don't want to fail signup if subscription creation fails
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { SubscriptionService } from '@/lib/services/subscriptions'
+import { logger } from '@/lib/utils/logger'
 import Stripe from 'stripe'
 
 // Configure route to handle raw request bodies for webhook signature verification
@@ -14,21 +15,17 @@ export const runtime = 'nodejs'
  * Important: This route must have raw body access for signature verification
  */
 export async function POST(req: Request) {
-  console.log('🔔 Webhook received')
+  logger.debug('Webhook received')
   let event: Stripe.Event
 
   try {
     // Get the signature from headers
     const signature = (await headers()).get('stripe-signature')
-    console.log('📝 Signature present:', signature ? 'YES' : 'NO')
-
-    if (signature) {
-      // Log signature parts (first 20 chars only for security)
-      console.log('📝 Signature preview:', signature.substring(0, 50) + '...')
-    }
+    logger.debug('Signature present:', signature ? 'YES' : 'NO')
 
     if (!signature) {
-      console.error('❌ No signature found in headers')
+      logger.error('No signature found in webhook headers')
+      logger.security('webhook_no_signature', { ip: req.headers.get('x-forwarded-for') })
       return NextResponse.json(
         { error: 'No signature found' },
         { status: 400 }
@@ -38,32 +35,29 @@ export async function POST(req: Request) {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
     if (!webhookSecret) {
-      console.error('❌ STRIPE_WEBHOOK_SECRET is not set')
+      logger.error('STRIPE_WEBHOOK_SECRET is not set')
       return NextResponse.json(
         { error: 'Webhook secret not configured' },
         { status: 500 }
       )
     }
 
-    console.log('🔑 Webhook secret configured:', webhookSecret.substring(0, 20) + '...')
-
     // Read the body as text
     const body = await req.text()
-    console.log('📦 Body length:', body.length)
-    console.log('📦 Body preview (first 100 chars):', body.substring(0, 100))
-    console.log('📦 Body type:', typeof body)
+    logger.debug('Webhook body length:', body.length)
 
     // Verify webhook signature and construct event
-    console.log('🔐 Attempting signature verification...')
+    logger.debug('Attempting signature verification...')
     event = stripe.webhooks.constructEvent(
       body,
       signature,
       webhookSecret
     )
-    console.log('✅ Signature verified successfully!')
+    logger.debug('Signature verified successfully for event:', event.type)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    console.error('Webhook signature verification failed:', errorMessage)
+    logger.error('Webhook signature verification failed:', errorMessage)
+    logger.security('webhook_verification_failed', { error: errorMessage })
     return NextResponse.json(
       { error: `Webhook Error: ${errorMessage}` },
       { status: 400 }
@@ -94,12 +88,12 @@ export async function POST(req: Request) {
         break
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        logger.debug(`Unhandled event type: ${event.type}`)
     }
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error('Error processing webhook:', error)
+    logger.error('Error processing webhook:', error)
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }
@@ -112,17 +106,17 @@ export async function POST(req: Request) {
  * Creates or updates user subscription when payment succeeds
  */
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  console.log('Checkout session completed:', session.id)
+  logger.info('Checkout session completed:', session.id)
 
   const userId = session.metadata?.user_id
   if (!userId) {
-    console.error('No user_id in checkout session metadata')
+    logger.error('No user_id in checkout session metadata')
     return
   }
 
   const subscriptionId = session.subscription as string
   if (!subscriptionId) {
-    console.error('No subscription ID in checkout session')
+    logger.error('No subscription ID in checkout session')
     return
   }
 
@@ -137,7 +131,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     subscription.items.data[0].price.id
   )
 
-  console.log(`User ${userId} upgraded to Pro`)
+  logger.info(`User ${userId} upgraded to Pro`)
 }
 
 /**
@@ -145,11 +139,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
  * Updates user subscription when Stripe subscription changes
  */
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  console.log('Subscription updated:', subscription.id)
+  logger.info('Subscription updated:', subscription.id)
 
   const userId = await SubscriptionService.getUserByStripeSubscriptionId(subscription.id)
   if (!userId) {
-    console.error('No user found for subscription:', subscription.id)
+    logger.error('No user found for subscription:', subscription.id)
     return
   }
 
@@ -165,7 +159,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     cancel_at_period_end: subscription.cancel_at_period_end,
   })
 
-  console.log(`Subscription updated for user ${userId}`)
+  logger.info(`Subscription updated for user ${userId}`)
 }
 
 /**
@@ -173,18 +167,18 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
  * Downgrades user to free tier
  */
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  console.log('Subscription deleted:', subscription.id)
+  logger.info('Subscription deleted:', subscription.id)
 
   const userId = await SubscriptionService.getUserByStripeSubscriptionId(subscription.id)
   if (!userId) {
-    console.error('No user found for subscription:', subscription.id)
+    logger.error('No user found for subscription:', subscription.id)
     return
   }
 
   // Downgrade to free tier
   await SubscriptionService.downgradeToFree(userId)
 
-  console.log(`User ${userId} downgraded to Free`)
+  logger.info(`User ${userId} downgraded to Free`)
 }
 
 /**
@@ -192,7 +186,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
  * Resets billing period for the user
  */
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
-  console.log('Invoice payment succeeded:', invoice.id)
+  logger.info('Invoice payment succeeded:', invoice.id)
 
   const subscriptionId = invoice.subscription as string
   if (!subscriptionId) {
@@ -201,14 +195,14 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
 
   const userId = await SubscriptionService.getUserByStripeSubscriptionId(subscriptionId)
   if (!userId) {
-    console.error('No user found for subscription:', subscriptionId)
+    logger.error('No user found for subscription:', subscriptionId)
     return
   }
 
   // Reset billing period
   await SubscriptionService.resetBillingPeriod(userId)
 
-  console.log(`Billing period reset for user ${userId}`)
+  logger.info(`Billing period reset for user ${userId}`)
 }
 
 /**
@@ -216,7 +210,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
  * Log the failure (could send notification email here)
  */
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-  console.error('Invoice payment failed:', invoice.id)
+  logger.error('Invoice payment failed:', invoice.id)
 
   const subscriptionId = invoice.subscription as string
   if (!subscriptionId) {
@@ -225,10 +219,11 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 
   const userId = await SubscriptionService.getUserByStripeSubscriptionId(subscriptionId)
   if (!userId) {
-    console.error('No user found for subscription:', subscriptionId)
+    logger.error('No user found for subscription:', subscriptionId)
     return
   }
 
+  logger.security('payment_failed', { userId, invoiceId: invoice.id })
   // TODO: Send email notification to user about payment failure
-  console.log(`Payment failed for user ${userId}`)
+  logger.warn(`Payment failed for user ${userId}`)
 }
