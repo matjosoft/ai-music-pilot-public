@@ -25,7 +25,7 @@ const store = new Map<string, RateLimitEntry>()
 // Cleanup old entries every hour to prevent memory leaks
 setInterval(() => {
   const now = Date.now()
-  for (const [key, entry] of store.entries()) {
+  for (const [key, entry] of Array.from(store.entries())) {
     if (entry.resetAt < now) {
       store.delete(key)
     }
