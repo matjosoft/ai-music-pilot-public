@@ -8,7 +8,7 @@ export default async function Home() {
   const { data: { session } } = await supabase.auth.getSession();
 
   const ctaLink = session ? '/create' : '/login';
-  const ctaText = session ? 'Start Creating Now' : 'Generate Music Now';
+  const ctaText = session ? 'Start Creating' : 'Create Your First Prompt';
 
   return (
     <div className="min-h-screen bg-dark-bg">
@@ -30,13 +30,13 @@ export default async function Home() {
               </div>
             </div>
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-white mb-6 tracking-tight">
-              Create Royalty-Free Music
+              Craft Perfect Prompts
               <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-neon-purple via-neon-magenta to-neon-cyan">
-                in Seconds
+                for Suno AI
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Your AI Co-Pilot for Music Creation - Generate professional lyrics, prompts, and metatags for Suno AI
+              Your AI-powered songwriting assistant — Generate professional lyrics, style prompts, and metatags optimized for Suno's Custom Mode
             </p>
 
             {/* Trust Badges */}
@@ -110,7 +110,7 @@ export default async function Home() {
           <div className="mb-20">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 text-center">How It Works</h2>
             <p className="text-xl text-gray-400 mb-12 text-center max-w-2xl mx-auto">
-              Three simple steps to create professional music
+              Three simple steps to generate Suno-ready prompts
             </p>
             <div className="bg-dark-card rounded-2xl shadow-2xl p-8 md:p-12 border border-gray-800">
               <div className="space-y-8">
@@ -174,10 +174,10 @@ export default async function Home() {
           <div className="text-center">
             <div className="bg-gradient-to-r from-neon-purple/10 via-neon-magenta/10 to-neon-cyan/10 rounded-3xl p-12 border border-neon-purple/30">
               <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Ready to Create Amazing Music?
+                Ready to Supercharge Your Suno Workflow?
               </h3>
               <p className="text-xl text-gray-400 mb-8">
-                Join thousands of creators making royalty-free music with AI
+                Join creators crafting professional prompts and lyrics for Suno AI
               </p>
               <Link
                 href={ctaLink}
