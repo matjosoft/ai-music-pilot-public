@@ -35,13 +35,18 @@ export default function CreatePage() {
         };
       } else {
         // Custom mode: send vision, genre, mood, tempo
+        // Include theme in vision if provided, use default tempo
+        const visionWithTheme = formData.theme
+          ? `${formData.simpleDescription}\n\nTheme: ${formData.theme}`
+          : formData.simpleDescription;
+
         requestBody = {
           songName: formData.songName,
           mode: 'custom',
-          vision: formData.simpleDescription,
+          vision: visionWithTheme,
           genre: formData.genre,
           mood: formData.mood,
-          tempo: formData.theme || 'Medium',
+          tempo: 'Medium',
           wordDensity: formData.wordDensity || 'medium',
           instrumental: formData.instrumental || false,
         };
