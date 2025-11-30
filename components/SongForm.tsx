@@ -71,9 +71,13 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
           value={formData.songName}
           onChange={(e) => setFormData({ ...formData, songName: e.target.value })}
           placeholder="My Awesome Song"
+          maxLength={255}
           className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple placeholder-gray-500"
           required
         />
+        <p className="text-xs text-gray-400">
+          {formData.songName.length}/255 characters
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -86,11 +90,12 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
           onChange={(e) => setFormData({ ...formData, simpleDescription: e.target.value })}
           placeholder="Example: A melancholic indie rock song about lost love and moving on, with acoustic guitars and emotional vocals..."
           rows={6}
+          maxLength={1800}
           className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple resize-none placeholder-gray-500"
           required
         />
         <p className="text-xs text-gray-400">
-          Describe the theme, emotions, story, or any specific ideas you have for your song.
+          Describe the theme, emotions, story, or any specific ideas you have for your song. ({formData.simpleDescription?.length || 0}/1800 characters)
         </p>
       </div>
 
@@ -174,8 +179,12 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
           value={formData.theme}
           onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
           placeholder="e.g., Love, Loss, Adventure, Social issues..."
+          maxLength={200}
           className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple placeholder-gray-500"
         />
+        <p className="text-xs text-gray-400">
+          {formData.theme?.length || 0}/200 characters
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -188,8 +197,12 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
           onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
           placeholder="Any specific instruments, vocal styles, or other details you'd like to include..."
           rows={3}
+          maxLength={500}
           className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple resize-none placeholder-gray-500"
         />
+        <p className="text-xs text-gray-400">
+          {formData.additionalNotes?.length || 0}/500 characters
+        </p>
       </div>
 
       <button

@@ -48,9 +48,13 @@ export default function ArtistModeForm({ onGenerate, isLoading }: ArtistModeForm
           value={formData.songName}
           onChange={(e) => setFormData({ ...formData, songName: e.target.value })}
           placeholder="e.g., Lost in the Echo"
+          maxLength={255}
           className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple placeholder-gray-500"
           required
         />
+        <p className="text-xs text-gray-400">
+          {formData.songName.length}/255 characters
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -63,11 +67,12 @@ export default function ArtistModeForm({ onGenerate, isLoading }: ArtistModeForm
           value={formData.artistName}
           onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
           placeholder="e.g., Taylor Swift, The Beatles, Ed Sheeran..."
+          maxLength={100}
           className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple placeholder-gray-500"
           required
         />
         <p className="text-xs text-gray-400">
-          The AI will analyze this artist&apos;s style and create a song that captures their musical essence.
+          The AI will analyze this artist&apos;s style and create a song that captures their musical essence. ({formData.artistName?.length || 0}/100 characters)
         </p>
       </div>
 
