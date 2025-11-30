@@ -63,15 +63,26 @@ export default function CreatePage() {
       if (!response.ok) {
         const errorData = await response.json();
 
-        // Handle usage limit (429 error)
+        // Handle 429 errors (rate limit or usage limit)
         if (response.status === 429) {
-          setUsageInfo({
-            remaining: errorData.usage?.remaining || 0,
-            limit: errorData.usage?.limit || 5
-          });
-          setShowUpgradePrompt(true);
-          setIsLoading(false);
-          return;
+          // Check if it's a rate limit error or usage limit error
+          if (errorData.code === 'RATE_LIMIT_EXCEEDED') {
+            // Rate limit error - show a different message
+            const resetDate = errorData.resetAt ? new Date(errorData.resetAt) : null;
+            const resetTime = resetDate ? resetDate.toLocaleTimeString() : 'later';
+            setError(`You're generating songs too quickly. Please try again at ${resetTime}.`);
+            setIsLoading(false);
+            return;
+          } else {
+            // Usage limit error - show upgrade prompt
+            setUsageInfo({
+              remaining: errorData.usage?.remaining || 0,
+              limit: errorData.usage?.limit || 5
+            });
+            setShowUpgradePrompt(true);
+            setIsLoading(false);
+            return;
+          }
         }
 
         throw new Error(errorData.error || 'Failed to generate song');

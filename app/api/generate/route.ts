@@ -3,6 +3,7 @@ import { generateAIResponse } from '@/lib/ai-client';
 import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase/server';
 import { SongService } from '@/lib/services/songs';
+import { SubscriptionService } from '@/lib/services/subscriptions';
 import { checkUsageLimit, logUsage, getUsageForResponse } from '@/lib/utils/usage-checker';
 import { rateLimit, RateLimitPresets, getRateLimitHeaders } from '@/lib/utils/rate-limit';
 import { logger } from '@/lib/utils/logger';
@@ -21,38 +22,44 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Check rate limit (prevent rapid-fire requests)
-    const rateLimitResult = rateLimit(user.id, RateLimitPresets.AI_GENERATION)
-    if (!rateLimitResult.success) {
-      logger.security('rate_limit_exceeded', {
-        userId: user.id,
-        endpoint: '/api/generate',
-        resetAt: new Date(rateLimitResult.reset).toISOString()
-      })
+    // 2. Check if user is a test user (for rate limit bypass)
+    const isTestUser = await SubscriptionService.isTestUser(user.id)
 
-      return NextResponse.json(
-        {
-          error: 'Too many requests. Please try again later.',
-          code: 'RATE_LIMIT_EXCEEDED',
-          resetAt: rateLimitResult.reset,
-        },
-        {
-          status: 429,
-          headers: getRateLimitHeaders(rateLimitResult),
-        }
-      )
+    // 3. Check rate limit (prevent rapid-fire requests) - skip for test users
+    let rateLimitResult
+    if (!isTestUser) {
+      rateLimitResult = rateLimit(user.id, RateLimitPresets.AI_GENERATION)
+      if (!rateLimitResult.success) {
+        logger.security('rate_limit_exceeded', {
+          userId: user.id,
+          endpoint: '/api/generate',
+          resetAt: new Date(rateLimitResult.reset).toISOString()
+        })
+
+        return NextResponse.json(
+          {
+            error: 'Too many requests. Please try again later.',
+            code: 'RATE_LIMIT_EXCEEDED',
+            resetAt: rateLimitResult.reset,
+          },
+          {
+            status: 429,
+            headers: getRateLimitHeaders(rateLimitResult),
+          }
+        )
+      }
     }
 
-    // 3. Check usage limit (monthly quota)
+    // 4. Check usage limit (monthly quota)
     const usageCheck = await checkUsageLimit(user.id)
     if (!usageCheck.allowed && usageCheck.response) {
       return usageCheck.response
     }
 
-    // 4. Parse and validate request body
+    // 5. Parse and validate request body
     const body = await request.json();
 
-    // 5. Validate and sanitize all inputs
+    // 6. Validate and sanitize all inputs
     const validation = validateSongGeneration(body)
     if (!validation.isValid) {
       logger.warn('Invalid song generation input:', validation.errors)
@@ -78,13 +85,13 @@ export async function POST(request: NextRequest) {
       userPrompt = generateProjectPrompt(vision!, genre!, mood!, tempo!, wordDensity || 'medium', instrumental || false);
     }
 
-    // 6. Call AI API (supports both Anthropic and OpenAI)
+    // 7. Call AI API (supports both Anthropic and OpenAI)
     const response = await generateAIResponse({
       systemPrompt: SYSTEM_PROMPT,
       userPrompt,
     });
 
-    // 7. Parse JSON response
+    // 8. Parse JSON response
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(response.content);
@@ -96,7 +103,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 8. Validate parsed response has songs
+    // 9. Validate parsed response has songs
     if (!parsedResponse.songs || !Array.isArray(parsedResponse.songs) || parsedResponse.songs.length === 0) {
       logger.error('Invalid AI response - missing songs:', parsedResponse);
       return NextResponse.json(
@@ -107,7 +114,7 @@ export async function POST(request: NextRequest) {
 
     logger.debug('Creating song with content:', parsedResponse.songs);
 
-    // 9. Save to Supabase
+    // 10. Save to Supabase
     const song = await SongService.createSongServer(
       user.id,
       songName,
@@ -117,22 +124,22 @@ export async function POST(request: NextRequest) {
 
     logger.debug('Created song:', song);
 
-    // 10. Log usage
+    // 11. Log usage
     await logUsage(user.id, 'generate', song.id)
 
-    // 11. Get updated usage stats
+    // 12. Get updated usage stats
     const usage = await getUsageForResponse(user.id)
 
-    // 12. Return song with ID, usage stats, and rate limit headers
+    // 13. Return song with ID, usage stats, and rate limit headers (if applicable)
     return NextResponse.json(
       {
         success: true,
         song,
         usage
       },
-      {
+      rateLimitResult ? {
         headers: getRateLimitHeaders(rateLimitResult)
-      }
+      } : undefined
     );
   } catch (error) {
     logger.error('Error generating song:', error);
