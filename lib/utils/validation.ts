@@ -50,7 +50,7 @@ export const ValidationRules = {
   songName: {
     minLength: 1,
     maxLength: 255,
-    pattern: /^[a-zA-Z0-9\s\-_',.!?()&]+$/,
+    pattern: /^[\p{L}\p{N}\s\-_',.!?()&]+$/u,
   },
   vision: {
     minLength: 1,
