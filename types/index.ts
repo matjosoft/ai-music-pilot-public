@@ -36,6 +36,20 @@ export interface StoredSong extends GenerationResponse {
   id: string;
 }
 
+// Generation parameters stored with each song
+export interface GenerationParams {
+  // Custom mode params
+  vision?: string
+  genre?: string
+  mood?: string
+  tempo?: string
+  wordDensity?: string
+  instrumental?: boolean
+  // Artist mode params
+  title?: string
+  artistName?: string
+}
+
 // Database Song type (matches Supabase schema)
 export interface Song {
   id: string
@@ -43,13 +57,14 @@ export interface Song {
   name: string
   mode: 'custom' | 'artist' | 'simple'
   songs: SongStructure[]
+  generation_params?: GenerationParams
   created_at: string
   updated_at: string
 }
 
 // Subscription types
 export type SubscriptionTier = 'free' | 'pro' | 'test'
-export type UsageActionType = 'generate' | 'regenerate_lyrics' | 'regenerate_metatags'
+export type UsageActionType = 'generate' | 'regenerate_lyrics' | 'regenerate_metatags' | 'regenerate_with_params'
 
 export interface UserSubscription {
   id: string

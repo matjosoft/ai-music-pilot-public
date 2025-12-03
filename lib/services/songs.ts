@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { createServerClient } from '@/lib/supabase/server'
-import type { Song, SongStructure, Database } from '@/types'
+import type { Song, SongStructure, Database, GenerationParams } from '@/types'
 
 export class SongService {
   // Client-side methods
@@ -93,7 +93,8 @@ export class SongService {
     userId: string,
     name: string,
     mode: 'custom' | 'artist' | 'simple',
-    songs: SongStructure[]
+    songs: SongStructure[],
+    generationParams?: GenerationParams
   ): Promise<Song> {
     const supabase = createServerClient()
 
@@ -102,7 +103,8 @@ export class SongService {
       user_id: userId,
       name,
       mode,
-      songs: songs as any // Cast to Json type for database storage
+      songs: songs as any, // Cast to Json type for database storage
+      generation_params: generationParams as any // Cast to Json type for database storage
     }
 
     const { data, error } = await supabase
@@ -118,13 +120,13 @@ export class SongService {
   static async updateSongServer(
     userId: string,
     id: string,
-    updates: Partial<Pick<Song, 'name' | 'songs'>>
+    updates: Partial<Pick<Song, 'name' | 'songs' | 'generation_params'>>
   ): Promise<Song> {
     const supabase = createServerClient()
 
     const { data, error } = await supabase
       .from('songs')
-      .update(updates)
+      .update(updates as any)
       .eq('id', id)
       .eq('user_id', userId) // Ensure ownership
       .select()

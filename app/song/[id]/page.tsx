@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import CustomModeOutput from '@/components/CustomModeOutput';
 import SunoInstructions from '@/components/SunoInstructions';
+import RegenerateParamsModal, { RegenerateParams } from '@/components/RegenerateParamsModal';
 import { Song, SongStructure } from '@/types';
 
 export default function SongPage({ params }: { params: { id: string } }) {
@@ -14,6 +15,7 @@ export default function SongPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isParamsModalOpen, setIsParamsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchSong();
@@ -121,6 +123,45 @@ export default function SongPage({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleRegenerateWithParams = async (params: RegenerateParams) => {
+    if (!song || song.songs.length === 0) return;
+
+    setIsRegenerating(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/regenerate-with-params', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songId: song.id,
+          songIndex: 0,
+          ...params,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to regenerate with new parameters');
+      }
+
+      const data = await response.json();
+      if (data.success && data.song) {
+        setSong(data.song);
+        setIsParamsModalOpen(false);
+        // Dispatch event to update usage counter
+        window.dispatchEvent(new Event('usageUpdated'));
+      }
+    } catch (err) {
+      console.error('Error regenerating with params:', err);
+      setError(err instanceof Error ? err.message : 'Failed to regenerate with new parameters. Please try again.');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-dark-bg flex items-center justify-center">
@@ -189,13 +230,26 @@ export default function SongPage({ params }: { params: { id: string } }) {
 
           {/* Output */}
           {song.songs && song.songs.length > 0 ? (
-            <CustomModeOutput
-              lyrics={song.songs[0].lyrics}
-              style={song.songs[0].style}
-              onRegenerateLyrics={handleRegenerateLyrics}
-              onRegenerateMetatags={handleRegenerateMetatags}
-              isRegenerating={isRegenerating}
-            />
+            <>
+              <CustomModeOutput
+                lyrics={song.songs[0].lyrics}
+                style={song.songs[0].style}
+                onRegenerateLyrics={handleRegenerateLyrics}
+                onRegenerateMetatags={handleRegenerateMetatags}
+                onRegenerateWithParams={() => setIsParamsModalOpen(true)}
+                isRegenerating={isRegenerating}
+              />
+
+              {/* Regenerate with Params Modal */}
+              <RegenerateParamsModal
+                isOpen={isParamsModalOpen}
+                onClose={() => setIsParamsModalOpen(false)}
+                onRegenerate={handleRegenerateWithParams}
+                isRegenerating={isRegenerating}
+                mode={song.mode}
+                currentParams={song.generation_params}
+              />
+            </>
           ) : (
             <div className="bg-yellow-900/30 border border-yellow-500/50 text-yellow-200 px-6 py-4 rounded-lg">
               <p className="font-semibold mb-2">No content found for this song</p>

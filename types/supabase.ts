@@ -16,6 +16,7 @@ export interface Database {
           name: string
           mode: 'custom' | 'artist' | 'simple'
           songs: Json
+          generation_params: Json | null
           created_at: string
           updated_at: string
         }
@@ -25,6 +26,7 @@ export interface Database {
           name: string
           mode: 'custom' | 'artist' | 'simple'
           songs?: Json
+          generation_params?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -34,6 +36,7 @@ export interface Database {
           name?: string
           mode?: 'custom' | 'artist' | 'simple'
           songs?: Json
+          generation_params?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -92,7 +95,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          action_type: 'generate' | 'regenerate_lyrics' | 'regenerate_metatags'
+          action_type: 'generate' | 'regenerate_lyrics' | 'regenerate_metatags' | 'regenerate_with_params'
           song_id: string | null
           tokens_used: number | null
           model_used: string | null
@@ -101,7 +104,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          action_type: 'generate' | 'regenerate_lyrics' | 'regenerate_metatags'
+          action_type: 'generate' | 'regenerate_lyrics' | 'regenerate_metatags' | 'regenerate_with_params'
           song_id?: string | null
           tokens_used?: number | null
           model_used?: string | null
@@ -110,7 +113,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          action_type?: 'generate' | 'regenerate_lyrics' | 'regenerate_metatags'
+          action_type?: 'generate' | 'regenerate_lyrics' | 'regenerate_metatags' | 'regenerate_with_params'
           song_id?: string | null
           tokens_used?: number | null
           model_used?: string | null

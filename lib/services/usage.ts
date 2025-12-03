@@ -274,6 +274,7 @@ export class UsageService {
       generate: 0,
       regenerate_lyrics: 0,
       regenerate_metatags: 0,
+      regenerate_with_params: 0,
     }
 
     data.forEach((log: { action_type: UsageActionType }) => {
