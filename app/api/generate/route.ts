@@ -75,14 +75,30 @@ export async function POST(request: NextRequest) {
     const { songName, mode, vision, genre, mood, tempo, wordDensity, title, artistName, instrumental } = validation.data!
 
     let userPrompt: string;
+    let generationParams: any = {};
 
     // Handle artist mode
     if (mode === 'artist') {
       // Generate user prompt for artist mode
       userPrompt = generateArtistModePrompt(title!, artistName!, wordDensity || 'medium');
+      // Save generation parameters
+      generationParams = {
+        title,
+        artistName,
+        wordDensity: wordDensity || 'medium'
+      };
     } else {
       // Generate user prompt for custom mode
       userPrompt = generateProjectPrompt(vision!, genre!, mood!, tempo!, wordDensity || 'medium', instrumental || false);
+      // Save generation parameters
+      generationParams = {
+        vision,
+        genre,
+        mood,
+        tempo,
+        wordDensity: wordDensity || 'medium',
+        instrumental: instrumental || false
+      };
     }
 
     // 7. Call AI API (supports both Anthropic and OpenAI)
@@ -119,7 +135,8 @@ export async function POST(request: NextRequest) {
       user.id,
       songName,
       mode,
-      parsedResponse.songs
+      parsedResponse.songs,
+      generationParams
     )
 
     logger.debug('Created song:', song);

@@ -247,6 +247,7 @@ export default function SongPage({ params }: { params: { id: string } }) {
                 onRegenerate={handleRegenerateWithParams}
                 isRegenerating={isRegenerating}
                 mode={song.mode}
+                currentParams={song.generation_params}
               />
             </>
           ) : (

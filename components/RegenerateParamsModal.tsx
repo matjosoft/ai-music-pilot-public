@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, Settings } from 'lucide-react';
 import GenreSelector from './GenreSelector';
+import { GenerationParams } from '@/types';
 
 interface RegenerateParamsModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface RegenerateParamsModalProps {
   onRegenerate: (params: RegenerateParams) => void;
   isRegenerating: boolean;
   mode: 'custom' | 'artist' | 'simple';
+  currentParams?: GenerationParams;
 }
 
 export interface RegenerateParams {
@@ -62,6 +64,7 @@ export default function RegenerateParamsModal({
   onRegenerate,
   isRegenerating,
   mode,
+  currentParams,
 }: RegenerateParamsModalProps) {
   const [params, setParams] = useState<RegenerateParams>({
     mode,
@@ -77,22 +80,23 @@ export default function RegenerateParamsModal({
     artistName: '',
   });
 
-  // Reset form when modal opens
+  // Reset form when modal opens and pre-fill with current params if available
   useEffect(() => {
     if (isOpen) {
       setParams({
         mode,
-        vision: '',
-        genre: 'Pop',
-        mood: MOODS[0],
-        tempo: 'Medium',
-        wordDensity: 'medium',
-        instrumental: false,
-        title: '',
-        artistName: '',
+        // Use current params if available, otherwise use defaults
+        vision: currentParams?.vision || '',
+        genre: currentParams?.genre || 'Pop',
+        mood: currentParams?.mood || MOODS[0],
+        tempo: currentParams?.tempo || 'Medium',
+        wordDensity: currentParams?.wordDensity || 'medium',
+        instrumental: currentParams?.instrumental || false,
+        title: currentParams?.title || '',
+        artistName: currentParams?.artistName || '',
       });
     }
-  }, [isOpen, mode]);
+  }, [isOpen, mode, currentParams]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

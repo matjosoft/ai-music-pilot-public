@@ -70,11 +70,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Song not found' }, { status: 404 })
     }
 
-    // 5. Generate user prompt based on mode
+    // 5. Generate user prompt based on mode and save parameters
     let userPrompt: string;
+    let generationParams: any = {};
 
     if (mode === 'artist') {
       userPrompt = generateArtistModePrompt(title, artistName, wordDensity || 'medium');
+      // Save generation parameters
+      generationParams = {
+        title,
+        artistName,
+        wordDensity: wordDensity || 'medium'
+      };
     } else {
       userPrompt = generateProjectPrompt(
         vision,
@@ -84,6 +91,15 @@ export async function POST(request: NextRequest) {
         wordDensity || 'medium',
         instrumental || false
       );
+      // Save generation parameters
+      generationParams = {
+        vision,
+        genre,
+        mood,
+        tempo,
+        wordDensity: wordDensity || 'medium',
+        instrumental: instrumental || false
+      };
     }
 
     // 6. Call AI API (supports both Anthropic and OpenAI)
@@ -120,7 +136,7 @@ export async function POST(request: NextRequest) {
     const updatedSong = await SongService.updateSongServer(
       user.id,
       songId,
-      { songs: updatedSongs }
+      { songs: updatedSongs, generation_params: generationParams }
     )
 
     // 10. Log usage
