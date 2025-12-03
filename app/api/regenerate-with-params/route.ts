@@ -1,0 +1,144 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { generateAIResponse } from '@/lib/ai-client';
+import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt } from '@/lib/prompts';
+import { createServerClient } from '@/lib/supabase/server';
+import { SongService } from '@/lib/services/songs';
+import { checkUsageLimit, logUsage, getUsageForResponse } from '@/lib/utils/usage-checker';
+import { logger } from '@/lib/utils/logger';
+
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Verify authentication
+    const supabase = createServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // 2. Check usage limit
+    const usageCheck = await checkUsageLimit(user.id)
+    if (!usageCheck.allowed && usageCheck.response) {
+      return usageCheck.response
+    }
+
+    // 3. Parse request body
+    const body = await request.json();
+    const {
+      songId,
+      songIndex,
+      mode,
+      // Custom mode params
+      vision,
+      genre,
+      mood,
+      tempo,
+      wordDensity,
+      instrumental,
+      // Artist mode params
+      title,
+      artistName
+    } = body;
+
+    // Validate input
+    if (!songId || songIndex === undefined || !mode) {
+      return NextResponse.json(
+        { error: 'Missing required fields: songId, songIndex, and mode are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate mode-specific required fields
+    if (mode === 'artist' && (!title || !artistName)) {
+      return NextResponse.json(
+        { error: 'Missing required fields for artist mode: title and artistName' },
+        { status: 400 }
+      );
+    }
+
+    if (mode === 'custom' && (!vision || !genre || !mood || !tempo)) {
+      return NextResponse.json(
+        { error: 'Missing required fields for custom mode: vision, genre, mood, and tempo' },
+        { status: 400 }
+      );
+    }
+
+    // 4. Fetch existing song
+    const song = await SongService.getSongServer(user.id, songId)
+
+    if (!song) {
+      return NextResponse.json({ error: 'Song not found' }, { status: 404 })
+    }
+
+    // 5. Generate user prompt based on mode
+    let userPrompt: string;
+
+    if (mode === 'artist') {
+      userPrompt = generateArtistModePrompt(title, artistName, wordDensity || 'medium');
+    } else {
+      userPrompt = generateProjectPrompt(
+        vision,
+        genre,
+        mood,
+        tempo,
+        wordDensity || 'medium',
+        instrumental || false
+      );
+    }
+
+    // 6. Call AI API (supports both Anthropic and OpenAI)
+    const response = await generateAIResponse({
+      systemPrompt: SYSTEM_PROMPT,
+      userPrompt,
+    });
+
+    // 7. Parse JSON response
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(response.content);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', response.content);
+      return NextResponse.json(
+        { error: 'Invalid response format from AI' },
+        { status: 500 }
+      );
+    }
+
+    // 8. Validate parsed response has songs
+    if (!parsedResponse.songs || !Array.isArray(parsedResponse.songs) || parsedResponse.songs.length === 0) {
+      logger.error('Invalid AI response - missing songs:', parsedResponse);
+      return NextResponse.json(
+        { error: 'AI response did not contain valid songs' },
+        { status: 500 }
+      );
+    }
+
+    // 9. Update song in database
+    const updatedSongs = [...song.songs]
+    updatedSongs[songIndex] = parsedResponse.songs[0] // Use the first generated song
+
+    const updatedSong = await SongService.updateSongServer(
+      user.id,
+      songId,
+      { songs: updatedSongs }
+    )
+
+    // 10. Log usage
+    await logUsage(user.id, 'regenerate_with_params', songId)
+
+    // 11. Get updated usage stats
+    const usage = await getUsageForResponse(user.id)
+
+    return NextResponse.json({
+      success: true,
+      song: updatedSong,
+      usage
+    });
+  } catch (error) {
+    console.error('Error regenerating with params:', error);
+    return NextResponse.json(
+      { error: 'Failed to regenerate with new parameters' },
+      { status: 500 }
+    );
+  }
+}

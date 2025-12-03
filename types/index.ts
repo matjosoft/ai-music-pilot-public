@@ -49,7 +49,7 @@ export interface Song {
 
 // Subscription types
 export type SubscriptionTier = 'free' | 'pro' | 'test'
-export type UsageActionType = 'generate' | 'regenerate_lyrics' | 'regenerate_metatags'
+export type UsageActionType = 'generate' | 'regenerate_lyrics' | 'regenerate_metatags' | 'regenerate_with_params'
 
 export interface UserSubscription {
   id: string

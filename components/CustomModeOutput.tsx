@@ -9,6 +9,7 @@ interface CustomModeOutputProps {
   style: string;
   onRegenerateLyrics: () => void;
   onRegenerateMetatags: () => void;
+  onRegenerateWithParams: () => void;
   isRegenerating: boolean;
 }
 
@@ -17,6 +18,7 @@ export default function CustomModeOutput({
   style,
   onRegenerateLyrics,
   onRegenerateMetatags,
+  onRegenerateWithParams,
   isRegenerating,
 }: CustomModeOutputProps) {
   const [copiedLyrics, setCopiedLyrics] = useState(false);
@@ -88,6 +90,18 @@ export default function CustomModeOutput({
                 <RefreshCw className="w-4 h-4" />
               )}
               <span>Regenerate Metatags</span>
+            </button>
+            <button
+              onClick={onRegenerateWithParams}
+              disabled={isRegenerating}
+              className="flex items-center space-x-1 px-4 py-2 bg-gradient-to-r from-neon-purple/20 to-neon-magenta/20 hover:from-neon-purple/30 hover:to-neon-magenta/30 text-white rounded-lg transition-all duration-300 border border-neon-purple/50 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isRegenerating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
+              <span>Regenerate with New Parameters</span>
             </button>
           </div>
         </div>
