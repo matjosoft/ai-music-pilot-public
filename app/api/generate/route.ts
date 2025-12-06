@@ -130,12 +130,13 @@ export async function POST(request: NextRequest) {
 
     logger.debug('Creating song with content:', parsedResponse.songs);
 
-    // 10. Save to Supabase
+    // 10. Save to Supabase - now creates song with first version
+    const songContent = parsedResponse.songs[0]; // Get first generated song structure
     const song = await SongService.createSongServer(
       user.id,
       songName,
       mode,
-      parsedResponse.songs,
+      songContent,
       generationParams
     )
 

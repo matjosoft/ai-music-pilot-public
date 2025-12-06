@@ -3,6 +3,7 @@ import { generateAIResponse } from '@/lib/ai-client';
 import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase/server';
 import { SongService } from '@/lib/services/songs';
+import { SongVersionService } from '@/lib/services/song-versions';
 import { checkUsageLimit, logUsage, getUsageForResponse } from '@/lib/utils/usage-checker';
 import { logger } from '@/lib/utils/logger';
 
@@ -26,7 +27,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       songId,
-      songIndex,
       mode,
       // Custom mode params
       vision,
@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate input
-    if (!songId || songIndex === undefined || !mode) {
+    if (!songId || !mode) {
       return NextResponse.json(
-        { error: 'Missing required fields: songId, songIndex, and mode are required' },
+        { error: 'Missing required fields: songId and mode are required' },
         { status: 400 }
       );
     }
@@ -63,11 +63,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Fetch existing song
+    // 4. Fetch existing song with active version
     const song = await SongService.getSongServer(user.id, songId)
 
     if (!song) {
       return NextResponse.json({ error: 'Song not found' }, { status: 404 })
+    }
+
+    if (!song.active_version) {
+      return NextResponse.json({ error: 'No active version found' }, { status: 404 })
+    }
+
+    // Check version limit
+    if (song.version_count >= 10) {
+      return NextResponse.json(
+        { error: 'Maximum 10 versions per song. Delete a version to create new ones.' },
+        { status: 400 }
+      );
     }
 
     // 5. Generate user prompt based on mode and save parameters
@@ -129,31 +141,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 9. Update song in database
-    const updatedSongs = [...song.songs]
-    updatedSongs[songIndex] = parsedResponse.songs[0] // Use the first generated song
-
-    const updatedSong = await SongService.updateSongServer(
-      user.id,
+    // 9. Create new version with new generation params
+    const songContent = parsedResponse.songs[0]; // Use the first generated song
+    const newVersion = await SongVersionService.createVersion(
       songId,
-      { songs: updatedSongs, generation_params: generationParams }
-    )
+      {
+        lyrics: songContent.lyrics,
+        style: songContent.style,
+        title: songContent.title
+      },
+      generationParams
+    );
 
-    // 10. Log usage
+    // 10. Set as active version and increment count
+    await SongService.setActiveVersion(user.id, songId, newVersion.id);
+    await SongService.incrementVersionCount(user.id, songId);
+
+    // 11. Get updated song
+    const updatedSong = await SongService.getSongServer(user.id, songId);
+
+    // 12. Log usage
     await logUsage(user.id, 'regenerate_with_params', songId)
 
-    // 11. Get updated usage stats
+    // 13. Get updated usage stats
     const usage = await getUsageForResponse(user.id)
 
     return NextResponse.json({
       success: true,
       song: updatedSong,
+      newVersion,
       usage
     });
   } catch (error) {
     console.error('Error regenerating with params:', error);
     return NextResponse.json(
-      { error: 'Failed to regenerate with new parameters' },
+      { error: error instanceof Error ? error.message : 'Failed to regenerate with new parameters' },
       { status: 500 }
     );
   }

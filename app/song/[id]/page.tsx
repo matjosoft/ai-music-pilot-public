@@ -1,30 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import CustomModeOutput from '@/components/CustomModeOutput';
 import SunoInstructions from '@/components/SunoInstructions';
 import RegenerateParamsModal, { RegenerateParams } from '@/components/RegenerateParamsModal';
-import { Song, SongStructure } from '@/types';
+import VersionSelector from '@/components/VersionSelector';
+import { Song, SongVersion } from '@/types';
 
 export default function SongPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
   const [song, setSong] = useState<Song | null>(null);
+  const [versions, setVersions] = useState<SongVersion[]>([]);
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isParamsModalOpen, setIsParamsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchSong();
+    fetchSongWithVersions();
   }, [params.id]);
 
-  const fetchSong = async () => {
+  const fetchSongWithVersions = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/songs/${params.id}`);
+      const response = await fetch(`/api/songs/${params.id}?include=versions`);
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -34,9 +35,9 @@ export default function SongPage({ params }: { params: { id: string } }) {
       }
 
       const data = await response.json();
-      console.log('Fetched song data:', data.song);
-      console.log('Song content:', data.song?.songs);
       setSong(data.song);
+      setVersions(data.song.versions || []);
+      setSelectedVersionId(data.song.active_version_id);
     } catch (err) {
       console.error('Error fetching song:', err);
       setError(err instanceof Error ? err.message : 'Failed to load song');
@@ -45,8 +46,15 @@ export default function SongPage({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleVersionChange = (versionId: string) => {
+    setSelectedVersionId(versionId);
+  };
+
+  // Get the currently displayed version
+  const displayVersion = versions.find(v => v.id === selectedVersionId) || song?.active_version;
+
   const handleRegenerateLyrics = async () => {
-    if (!song || song.songs.length === 0) return;
+    if (!song || !displayVersion) return;
 
     setIsRegenerating(true);
     setError(null);
@@ -59,72 +67,35 @@ export default function SongPage({ params }: { params: { id: string } }) {
         },
         body: JSON.stringify({
           songId: song.id,
-          songIndex: 0,
-          currentLyrics: song.songs[0].lyrics,
-          style: song.songs[0].style,
+          currentLyrics: displayVersion.lyrics,
+          style: displayVersion.style,
           instructions: '',
-          wordDensity: 'medium',
+          wordDensity: displayVersion.generation_params?.wordDensity || 'medium',
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to regenerate lyrics');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to regenerate lyrics');
       }
 
       const data = await response.json();
-      if (data.success && data.song) {
+      if (data.success && data.song && data.newVersion) {
         setSong(data.song);
-        // Dispatch event to update usage counter
+        setVersions([...versions, data.newVersion]);
+        setSelectedVersionId(data.newVersion.id);
         window.dispatchEvent(new Event('usageUpdated'));
       }
     } catch (err) {
       console.error('Error regenerating lyrics:', err);
-      setError('Failed to regenerate lyrics. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to regenerate lyrics. Please try again.');
     } finally {
       setIsRegenerating(false);
     }
   };
 
-  const handleRegenerateMetatags = async () => {
-    if (!song || song.songs.length === 0) return;
-
-    setIsRegenerating(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/regenerate-metatags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          songId: song.id,
-          songIndex: 0,
-          lyrics: song.songs[0].lyrics,
-          style: song.songs[0].style,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to regenerate metatags');
-      }
-
-      const data = await response.json();
-      if (data.success && data.song) {
-        setSong(data.song);
-        // Dispatch event to update usage counter
-        window.dispatchEvent(new Event('usageUpdated'));
-      }
-    } catch (err) {
-      console.error('Error regenerating metatags:', err);
-      setError('Failed to regenerate metatags. Please try again.');
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
-  const handleRegenerateWithParams = async (params: RegenerateParams) => {
-    if (!song || song.songs.length === 0) return;
+  const handleRegenerateWithParams = async (regenerateParams: RegenerateParams) => {
+    if (!song) return;
 
     setIsRegenerating(true);
     setError(null);
@@ -137,8 +108,7 @@ export default function SongPage({ params }: { params: { id: string } }) {
         },
         body: JSON.stringify({
           songId: song.id,
-          songIndex: 0,
-          ...params,
+          ...regenerateParams,
         }),
       });
 
@@ -148,10 +118,11 @@ export default function SongPage({ params }: { params: { id: string } }) {
       }
 
       const data = await response.json();
-      if (data.success && data.song) {
+      if (data.success && data.song && data.newVersion) {
         setSong(data.song);
+        setVersions([...versions, data.newVersion]);
+        setSelectedVersionId(data.newVersion.id);
         setIsParamsModalOpen(false);
-        // Dispatch event to update usage counter
         window.dispatchEvent(new Event('usageUpdated'));
       }
     } catch (err) {
@@ -173,13 +144,13 @@ export default function SongPage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (error || !song) {
+  if (error && !song) {
     return (
       <div className="min-h-screen bg-dark-bg py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <h1 className="text-3xl font-bold text-white mb-4">Error</h1>
-            <p className="text-red-400 mb-6">{error || 'Song not found'}</p>
+            <p className="text-red-400 mb-6">{error}</p>
             <Link
               href="/create"
               className="inline-block bg-gradient-to-r from-neon-purple to-neon-magenta hover:from-neon-magenta hover:to-neon-cyan text-white px-6 py-3 rounded-xl transition-all duration-300 shadow-neon-purple font-medium"
@@ -190,6 +161,10 @@ export default function SongPage({ params }: { params: { id: string } }) {
         </div>
       </div>
     );
+  }
+
+  if (!song) {
+    return null;
   }
 
   return (
@@ -223,21 +198,31 @@ export default function SongPage({ params }: { params: { id: string } }) {
             </div>
           )}
 
+          {/* Version Selector */}
+          {versions.length > 0 && (
+            <VersionSelector
+              versions={versions}
+              selectedVersionId={selectedVersionId}
+              activeVersionId={song.active_version_id}
+              onVersionChange={handleVersionChange}
+              onRegenerate={handleRegenerateLyrics}
+              onRegenerateWithParams={() => setIsParamsModalOpen(true)}
+              isRegenerating={isRegenerating}
+              maxVersionsReached={song.version_count >= 10}
+            />
+          )}
+
           {/* Instructions */}
           <div className="mb-6">
             <SunoInstructions />
           </div>
 
           {/* Output */}
-          {song.songs && song.songs.length > 0 ? (
+          {displayVersion ? (
             <>
               <CustomModeOutput
-                lyrics={song.songs[0].lyrics}
-                style={song.songs[0].style}
-                onRegenerateLyrics={handleRegenerateLyrics}
-                onRegenerateMetatags={handleRegenerateMetatags}
-                onRegenerateWithParams={() => setIsParamsModalOpen(true)}
-                isRegenerating={isRegenerating}
+                lyrics={displayVersion.lyrics}
+                style={displayVersion.style}
               />
 
               {/* Regenerate with Params Modal */}
@@ -247,7 +232,7 @@ export default function SongPage({ params }: { params: { id: string } }) {
                 onRegenerate={handleRegenerateWithParams}
                 isRegenerating={isRegenerating}
                 mode={song.mode}
-                currentParams={song.generation_params}
+                currentParams={displayVersion.generation_params}
               />
             </>
           ) : (
@@ -255,9 +240,6 @@ export default function SongPage({ params }: { params: { id: string } }) {
               <p className="font-semibold mb-2">No content found for this song</p>
               <p className="text-sm">
                 This song doesn't contain any generated content. This might be due to an error during generation.
-              </p>
-              <p className="text-sm mt-2">
-                Song data: {JSON.stringify({ songs: song.songs, songsLength: song.songs?.length }, null, 2)}
               </p>
             </div>
           )}
