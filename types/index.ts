@@ -36,7 +36,7 @@ export interface StoredSong extends GenerationResponse {
   id: string;
 }
 
-// Generation parameters stored with each song
+// Generation parameters stored with each song/version
 export interface GenerationParams {
   // Custom mode params
   vision?: string
@@ -50,16 +50,36 @@ export interface GenerationParams {
   artistName?: string
 }
 
+// Song version type (individual version of a song)
+export interface SongVersion {
+  id: string
+  song_id: string
+  version_number: number
+  lyrics: string
+  style: string
+  title: string
+  generation_params?: GenerationParams
+  created_at: string
+}
+
 // Database Song type (matches Supabase schema)
 export interface Song {
   id: string
   user_id: string
   name: string
   mode: 'custom' | 'artist' | 'simple'
-  songs: SongStructure[]
-  generation_params?: GenerationParams
+  active_version_id: string | null
+  version_count: number
   created_at: string
   updated_at: string
+
+  // Deprecated - kept for backwards compatibility during migration
+  songs_deprecated?: SongStructure[]
+  generation_params_deprecated?: GenerationParams
+
+  // Relationships (populated by joins)
+  active_version?: SongVersion
+  versions?: SongVersion[]
 }
 
 // Subscription types

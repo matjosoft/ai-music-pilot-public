@@ -3,7 +3,12 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import DeleteSongButton from '@/components/DeleteSongButton'
+import VersionDropdown from '@/components/VersionDropdown'
 import { Plus } from 'lucide-react'
+import { Song } from '@/types'
+
+// Disable caching to always get fresh data when navigating back
+export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   const supabase = createServerClient()
@@ -15,8 +20,12 @@ export default async function DashboardPage() {
 
   const { data: songs } = await supabase
     .from('songs')
-    .select('*')
-    .order('created_at', { ascending: false })
+    .select(`
+      *,
+      active_version:song_versions!fk_songs_active_version(*),
+      versions:song_versions!song_versions_song_id_fkey(*)
+    `)
+    .order('created_at', { ascending: false }) as { data: Song[] | null }
 
   return (
     <div className="min-h-screen bg-dark-bg py-12">
@@ -79,10 +88,19 @@ export default async function DashboardPage() {
 
                     {/* Song Info */}
                     <div className="space-y-2 mb-4">
-                      <p className="text-sm text-gray-400 flex items-center gap-2">
-                        <span className="text-lg">🎵</span>
-                        {song.songs.length} version{song.songs.length !== 1 ? 's' : ''}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-400 flex items-center gap-2">
+                          <span className="text-lg">🎵</span>
+                          {song.version_count || 1} version{(song.version_count || 1) !== 1 ? 's' : ''}
+                        </p>
+                        {song.versions && song.versions.length > 0 && (
+                          <VersionDropdown
+                            songId={song.id}
+                            versions={song.versions}
+                            activeVersionId={song.active_version_id}
+                          />
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500">
                         Created {formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}
                       </p>
@@ -93,14 +111,17 @@ export default async function DashboardPage() {
                       )}
                     </div>
 
-                    {/* Content Preview */}
-                    {song.songs[0] && (
+                    {/* Content Preview - show active version */}
+                    {song.active_version && (
                       <div className="mb-4 p-3 bg-dark-lighter rounded-lg border border-gray-700">
-                        <p className="text-sm font-medium text-gray-200 mb-1">
-                          {song.songs[0].title}
-                        </p>
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="text-sm font-medium text-gray-200">
+                            {song.active_version.title}
+                          </p>
+                          <span className="text-xs text-gray-500">v{song.active_version.version_number}</span>
+                        </div>
                         <p className="text-xs text-gray-400 line-clamp-2">
-                          {song.songs[0].style}
+                          {song.active_version.style}
                         </p>
                       </div>
                     )}

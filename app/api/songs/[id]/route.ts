@@ -14,7 +14,16 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const song = await SongService.getSongServer(user.id, params.id)
+    // Check if we should include all versions
+    const { searchParams } = new URL(request.url)
+    const includeVersions = searchParams.get('include') === 'versions'
+
+    let song
+    if (includeVersions) {
+      song = await SongService.getSongWithVersionsServer(user.id, params.id)
+    } else {
+      song = await SongService.getSongServer(user.id, params.id)
+    }
 
     if (!song) {
       return NextResponse.json({ error: 'Song not found' }, { status: 404 })

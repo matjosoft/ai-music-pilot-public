@@ -15,18 +15,21 @@ export interface Database {
           user_id: string
           name: string
           mode: 'custom' | 'artist' | 'simple'
-          songs: Json
-          generation_params: Json | null
+          active_version_id: string | null
+          version_count: number
           created_at: string
           updated_at: string
+          // Deprecated columns - kept for migration safety
+          songs_deprecated: Json | null
+          generation_params_deprecated: Json | null
         }
         Insert: {
           id?: string
           user_id: string
           name: string
           mode: 'custom' | 'artist' | 'simple'
-          songs?: Json
-          generation_params?: Json | null
+          active_version_id?: string | null
+          version_count?: number
           created_at?: string
           updated_at?: string
         }
@@ -35,10 +38,42 @@ export interface Database {
           user_id?: string
           name?: string
           mode?: 'custom' | 'artist' | 'simple'
-          songs?: Json
-          generation_params?: Json | null
+          active_version_id?: string | null
+          version_count?: number
           created_at?: string
           updated_at?: string
+        }
+      }
+      song_versions: {
+        Row: {
+          id: string
+          song_id: string
+          version_number: number
+          lyrics: string
+          style: string
+          title: string
+          generation_params: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          song_id: string
+          version_number: number
+          lyrics: string
+          style: string
+          title: string
+          generation_params?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          song_id?: string
+          version_number?: number
+          lyrics?: string
+          style?: string
+          title?: string
+          generation_params?: Json | null
+          created_at?: string
         }
       }
       user_subscriptions: {
