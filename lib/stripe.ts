@@ -7,7 +7,7 @@ import Stripe from 'stripe'
 let stripeInstance: Stripe | null = null
 
 export const stripe = new Proxy({} as Stripe, {
-  get: (target, prop) => {
+  get: (_target, prop) => {
     if (!stripeInstance) {
       if (!process.env.STRIPE_SECRET_KEY) {
         throw new Error('Missing STRIPE_SECRET_KEY environment variable')
@@ -46,4 +46,27 @@ export const formatAmountForStripe = (amount: number): number => {
  */
 export const formatAmountFromStripe = (amount: number): number => {
   return amount / 100
+}
+
+/**
+ * Check if we're using Stripe test mode keys
+ */
+export const isTestMode = (): boolean => {
+  return process.env.STRIPE_SECRET_KEY?.includes('_test_') || false
+}
+
+/**
+ * Validate that a Stripe customer ID exists and matches the current mode
+ * Returns true if valid, false if invalid (e.g., test ID with live keys)
+ */
+export const validateStripeCustomerId = async (customerId: string): Promise<boolean> => {
+  try {
+    await stripe.customers.retrieve(customerId)
+    return true
+  } catch (error: any) {
+    if (error?.code === 'resource_missing' && error?.message?.includes('test mode')) {
+      return false
+    }
+    throw error
+  }
 }
