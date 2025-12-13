@@ -5,8 +5,8 @@ import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { SongFormData } from '@/types';
 import GenreSelector from './GenreSelector';
 
-// Regex to check for section tags like [Verse], [Verse 1], [Chorus], etc.
-const SECTION_TAG_REGEX = /\[(Verse|Chorus|Bridge|Intro|Outro|Pre-Chorus|Hook|Interlude)(\s*\d*)?\]/i;
+// Regex to check for section tags like [Verse], [Verse 1], [Chorus], or with instrumentation [Verse 1: guitar, drums]
+const SECTION_TAG_REGEX = /\[(Verse|Chorus|Bridge|Intro|Outro|Pre-Chorus|Hook|Interlude)(\s*\d*)?(\s*:[^\]]+)?\]/i;
 
 interface SongFormProps {
   onGenerate: (formData: SongFormData) => void;

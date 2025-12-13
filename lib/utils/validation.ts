@@ -46,8 +46,8 @@ export function escapeHtml(input: string): string {
 /**
  * Validation rules for song generation inputs
  */
-// Regex to check for section tags like [Verse], [Verse 1], [Chorus], etc.
-const SECTION_TAG_REGEX = /\[(Verse|Chorus|Bridge|Intro|Outro|Pre-Chorus|Hook|Interlude)(\s*\d*)?\]/i
+// Regex to check for section tags like [Verse], [Verse 1], [Chorus], or with instrumentation [Verse 1: guitar, drums]
+const SECTION_TAG_REGEX = /\[(Verse|Chorus|Bridge|Intro|Outro|Pre-Chorus|Hook|Interlude)(\s*\d*)?(\s*:[^\]]+)?\]/i
 
 export const ValidationRules = {
   songName: {
