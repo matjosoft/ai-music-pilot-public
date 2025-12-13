@@ -27,7 +27,7 @@ export default async function RootLayout({
           <div className="container mx-auto px-4 py-4">
             <div className="flex justify-between items-center">
               <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-neon-purple via-neon-magenta to-neon-cyan bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-                AI Music Pilot (Test Preview Edition)
+                AI Music Pilot
               </Link>
               <div className="flex items-center space-x-6">
                 {session ? (
