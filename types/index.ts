@@ -17,6 +17,8 @@ export interface SongFormData {
   additionalNotes?: string;
   wordDensity?: WordDensity;
   instrumental?: boolean;
+  useCustomLyrics?: boolean;
+  customLyrics?: string;
 }
 
 export interface SongStructure {
@@ -45,6 +47,9 @@ export interface GenerationParams {
   tempo?: string
   wordDensity?: string
   instrumental?: boolean
+  // Custom lyrics params
+  useCustomLyrics?: boolean
+  customLyrics?: string
   // Artist mode params
   title?: string
   artistName?: string

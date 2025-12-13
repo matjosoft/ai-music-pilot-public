@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { SongFormData } from '@/types';
 import GenreSelector from './GenreSelector';
+
+// Regex to check for section tags like [Verse], [Verse 1], [Chorus], etc.
+const SECTION_TAG_REGEX = /\[(Verse|Chorus|Bridge|Intro|Outro|Pre-Chorus|Hook|Interlude)(\s*\d*)?\]/i;
 
 interface SongFormProps {
   onGenerate: (formData: SongFormData) => void;
@@ -52,10 +55,34 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
     additionalNotes: '',
     wordDensity: 'medium',
     instrumental: false,
+    useCustomLyrics: false,
+    customLyrics: '',
   });
+  const [customLyricsError, setCustomLyricsError] = useState<string | null>(null);
+
+  const validateCustomLyrics = (lyrics: string): string | null => {
+    if (!lyrics.trim()) {
+      return 'Please enter your lyrics';
+    }
+    if (!SECTION_TAG_REGEX.test(lyrics)) {
+      return 'Lyrics must contain tags such as [Verse], [Chorus] etc.';
+    }
+    return null;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate custom lyrics if enabled
+    if (formData.useCustomLyrics && !formData.instrumental) {
+      const error = validateCustomLyrics(formData.customLyrics || '');
+      if (error) {
+        setCustomLyricsError(error);
+        return;
+      }
+    }
+
+    setCustomLyricsError(null);
     onGenerate(formData);
   };
 
@@ -157,7 +184,12 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
             type="checkbox"
             id="instrumental"
             checked={formData.instrumental}
-            onChange={(e) => setFormData({ ...formData, instrumental: e.target.checked })}
+            onChange={(e) => setFormData({
+              ...formData,
+              instrumental: e.target.checked,
+              // Disable custom lyrics when instrumental is enabled
+              useCustomLyrics: e.target.checked ? false : formData.useCustomLyrics
+            })}
             className="w-4 h-4 text-neon-purple border-gray-700 bg-dark-lighter rounded focus:ring-2 focus:ring-neon-purple"
           />
           <label htmlFor="instrumental" className="text-sm font-medium text-white">
@@ -168,6 +200,70 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
           When selected, only an [Instrumental] tag will be generated with no lyrics.
         </p>
       </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="useCustomLyrics"
+            checked={formData.useCustomLyrics}
+            onChange={(e) => {
+              setFormData({ ...formData, useCustomLyrics: e.target.checked });
+              if (!e.target.checked) {
+                setCustomLyricsError(null);
+              }
+            }}
+            disabled={formData.instrumental}
+            className="w-4 h-4 text-neon-purple border-gray-700 bg-dark-lighter rounded focus:ring-2 focus:ring-neon-purple disabled:opacity-50"
+          />
+          <label htmlFor="useCustomLyrics" className={`text-sm font-medium ${formData.instrumental ? 'text-gray-500' : 'text-white'}`}>
+            Use My Own Lyrics
+          </label>
+        </div>
+        <p className="text-xs text-gray-400">
+          Provide your own lyrics. The AI will enhance them with instrumentation tags based on your vision.
+        </p>
+      </div>
+
+      {formData.useCustomLyrics && !formData.instrumental && (
+        <div className="space-y-2">
+          <label htmlFor="customLyrics" className="block text-sm font-medium text-white">
+            Your Lyrics
+          </label>
+          <textarea
+            id="customLyrics"
+            value={formData.customLyrics}
+            onChange={(e) => {
+              setFormData({ ...formData, customLyrics: e.target.value });
+              // Clear error when user starts typing
+              if (customLyricsError) {
+                setCustomLyricsError(null);
+              }
+            }}
+            placeholder={`Enter your lyrics with section tags. Example:
+
+[Verse 1]
+I like heavy stuff
+The heavy stuff is so good
+
+[Chorus]
+Heavy metal, heavy metal
+Rocking all night long`}
+            rows={10}
+            maxLength={5000}
+            className={`w-full px-4 py-2 bg-dark-lighter border ${customLyricsError ? 'border-red-500' : 'border-gray-700'} text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple resize-none placeholder-gray-500 font-mono text-sm`}
+          />
+          {customLyricsError && (
+            <div className="flex items-center space-x-2 text-red-400">
+              <AlertCircle className="w-4 h-4" />
+              <p className="text-sm">{customLyricsError}</p>
+            </div>
+          )}
+          <p className="text-xs text-gray-400">
+            Must include section tags like [Verse], [Chorus], [Bridge], etc. ({formData.customLyrics?.length || 0}/5000 characters)
+          </p>
+        </div>
+      )}
 
       <div className="space-y-2">
         <label htmlFor="theme" className="block text-sm font-medium text-white">
