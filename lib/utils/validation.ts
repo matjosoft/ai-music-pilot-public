@@ -46,6 +46,9 @@ export function escapeHtml(input: string): string {
 /**
  * Validation rules for song generation inputs
  */
+// Regex to check for section tags like [Verse], [Verse 1], [Chorus], or with instrumentation [Verse 1: guitar, drums]
+const SECTION_TAG_REGEX = /\[(Verse|Chorus|Bridge|Intro|Outro|Pre-Chorus|Hook|Interlude)(\s*\d*)?(\s*:[^\]]+)?\]/i
+
 export const ValidationRules = {
   songName: {
     minLength: 1,
@@ -75,6 +78,10 @@ export const ValidationRules = {
   artistName: {
     minLength: 1,
     maxLength: 100,
+  },
+  customLyrics: {
+    minLength: 1,
+    maxLength: 5000,
   },
   wordDensity: {
     allowed: ['low', 'medium', 'high'],
@@ -179,6 +186,37 @@ export function validateEnum<T extends string>(
 }
 
 /**
+ * Validate custom lyrics - must contain at least one section tag
+ */
+export function validateCustomLyrics(lyrics: string): {
+  isValid: boolean
+  value?: string
+  error?: string
+} {
+  if (typeof lyrics !== 'string' || !lyrics.trim()) {
+    return { isValid: false, error: 'Custom lyrics are required when using custom lyrics mode' }
+  }
+
+  const sanitized = lyrics.trim()
+
+  if (sanitized.length > ValidationRules.customLyrics.maxLength) {
+    return {
+      isValid: false,
+      error: `Custom lyrics must be less than ${ValidationRules.customLyrics.maxLength} characters`,
+    }
+  }
+
+  if (!SECTION_TAG_REGEX.test(sanitized)) {
+    return {
+      isValid: false,
+      error: 'Lyrics must contain tags such as [Verse], [Chorus] etc.',
+    }
+  }
+
+  return { isValid: true, value: sanitized }
+}
+
+/**
  * Validate song generation input
  */
 export interface SongGenerationInput {
@@ -192,6 +230,8 @@ export interface SongGenerationInput {
   title?: string
   artistName?: string
   instrumental?: boolean
+  useCustomLyrics?: boolean
+  customLyrics?: string
 }
 
 export function validateSongGeneration(
@@ -309,6 +349,19 @@ export function validateSongGeneration(
       errors.push(tempoValidation.error!)
     }
 
+    // Validate custom lyrics if useCustomLyrics is true and not instrumental
+    const useCustomLyrics = Boolean(input.useCustomLyrics) && !Boolean(input.instrumental)
+    let customLyricsValue: string | undefined
+
+    if (useCustomLyrics) {
+      const customLyricsValidation = validateCustomLyrics(input.customLyrics || '')
+      if (!customLyricsValidation.isValid) {
+        errors.push(customLyricsValidation.error!)
+      } else {
+        customLyricsValue = customLyricsValidation.value
+      }
+    }
+
     if (errors.length > 0) {
       return { isValid: false, errors }
     }
@@ -324,6 +377,8 @@ export function validateSongGeneration(
         tempo: tempoValidation.value!,
         wordDensity,
         instrumental: Boolean(input.instrumental),
+        useCustomLyrics,
+        customLyrics: customLyricsValue,
       },
     }
   }

@@ -230,6 +230,57 @@ Respond in JSON format:
 }`;
 }
 
+export function generateCustomLyricsPrompt(
+  customLyrics: string,
+  vision: string,
+  genre: string,
+  mood: string,
+  tempo: string
+): string {
+  return `Enhance the user's custom lyrics for Suno AI Custom Mode by adding instrumentation metatags.
+
+USER'S VISION: ${vision}
+GENRE: ${genre}
+MOOD: ${mood}
+TEMPO: ${tempo}
+
+USER'S CUSTOM LYRICS:
+${customLyrics}
+
+YOUR TASK:
+1. Keep ALL the lyrics text EXACTLY as the user wrote them - do not change any words
+2. Enhance each section tag (like [Verse 1], [Chorus], etc.) by adding instrumentation details
+3. The format should be: [Section: instrumentation details]
+4. If a tag already has instrumentation (e.g., [Verse 1: some details]), REPLACE the existing instrumentation with new instrumentation that matches the user's vision, genre, and mood
+5. Generate a style description that matches the vision, genre, mood, and tempo
+6. Create a fitting song title based on the lyrics content
+
+INSTRUMENTATION ENHANCEMENT RULES:
+- Match instrumentation to the genre and mood specified
+- Verse sections: Usually more stripped back, focus on storytelling
+- Chorus sections: Full power, all instruments, often with backing vocals
+- Bridge sections: Contrast, often instrumental or solo
+- Intro/Outro: Appropriate opening/closing instrumentation
+- Include details like: instruments, vocal style, dynamics, effects
+
+EXAMPLES:
+- User writes: [Verse 1] → You enhance to: [Verse 1: heavy metal guitar, heavy drums, aggressive male singer]
+- User writes: [Verse 1: old instrumentation] → You REPLACE to: [Verse 1: heavy metal guitar, heavy drums, aggressive male singer]
+- User writes: [Chorus] → You enhance to: [Chorus: full band, distorted guitars, powerful vocals, backing vocals]
+- User writes: [Bridge] → You enhance to: [Bridge: guitar solo, ambient synths, no vocals]
+
+Respond in JSON format:
+{
+  "songs": [
+    {
+      "title": "Song title based on lyrics content",
+      "lyrics": "Enhanced lyrics with instrumentation metatags (keep original lyrics text intact)...",
+      "style": "comma, separated, style, elements matching ${genre}, ${mood}..."
+    }
+  ]
+}`;
+}
+
 export function generateArtistModePrompt(
   title: string,
   artistName: string,

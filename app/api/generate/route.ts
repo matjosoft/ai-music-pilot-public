@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateAIResponse } from '@/lib/ai-client';
-import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt } from '@/lib/prompts';
+import { SYSTEM_PROMPT, generateProjectPrompt, generateArtistModePrompt, generateCustomLyricsPrompt } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase/server';
 import { SongService } from '@/lib/services/songs';
 import { SubscriptionService } from '@/lib/services/subscriptions';
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { songName, mode, vision, genre, mood, tempo, wordDensity, title, artistName, instrumental } = validation.data!
+    const { songName, mode, vision, genre, mood, tempo, wordDensity, title, artistName, instrumental, useCustomLyrics, customLyrics } = validation.data!
 
     let userPrompt: string;
     let generationParams: any = {};
@@ -86,6 +86,18 @@ export async function POST(request: NextRequest) {
         title,
         artistName,
         wordDensity: wordDensity || 'medium'
+      };
+    } else if (useCustomLyrics && customLyrics) {
+      // Generate user prompt for custom lyrics mode
+      userPrompt = generateCustomLyricsPrompt(customLyrics, vision!, genre!, mood!, tempo!);
+      // Save generation parameters
+      generationParams = {
+        vision,
+        genre,
+        mood,
+        tempo,
+        useCustomLyrics: true,
+        customLyrics
       };
     } else {
       // Generate user prompt for custom mode

@@ -49,6 +49,8 @@ export default function CreatePage() {
           tempo: 'Medium',
           wordDensity: formData.wordDensity || 'medium',
           instrumental: formData.instrumental || false,
+          useCustomLyrics: formData.useCustomLyrics || false,
+          customLyrics: formData.customLyrics || '',
         };
       }
 
