@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Sparkles, ArrowRight, Shield, DollarSign, Youtube, Zap } from 'lucide-react';
+import { Sparkles, ArrowRight, Shield, DollarSign, Youtube, Zap, BookOpen } from 'lucide-react';
 import { createServerClient } from '@/lib/supabase/server';
 
 export default async function Home() {
@@ -63,6 +63,16 @@ export default async function Home() {
               <span>{ctaText}</span>
               <ArrowRight className="w-7 h-7" />
             </Link>
+
+            <div className="mt-8">
+              <Link
+                href="/about"
+                className="inline-flex items-center space-x-3 bg-dark-card border-2 border-neon-cyan/50 hover:border-neon-cyan hover:bg-neon-cyan/10 text-white font-semibold py-4 px-8 rounded-xl text-lg transition-all duration-300 shadow-lg hover:shadow-neon-cyan/30"
+              >
+                <BookOpen className="w-6 h-6 text-neon-cyan" />
+                <span>Read More About Features &amp; Pricing</span>
+              </Link>
+            </div>
           </div>
 
           {/* Features Section */}
