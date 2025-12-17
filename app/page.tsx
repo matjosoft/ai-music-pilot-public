@@ -64,13 +64,13 @@ export default async function Home() {
               <ArrowRight className="w-7 h-7" />
             </Link>
 
-            <div className="mt-6">
+            <div className="mt-8">
               <Link
                 href="/about"
-                className="inline-flex items-center space-x-2 text-gray-400 hover:text-neon-cyan transition-colors duration-300"
+                className="inline-flex items-center space-x-3 bg-dark-card border-2 border-neon-cyan/50 hover:border-neon-cyan hover:bg-neon-cyan/10 text-white font-semibold py-4 px-8 rounded-xl text-lg transition-all duration-300 shadow-lg hover:shadow-neon-cyan/30"
               >
-                <BookOpen className="w-5 h-5" />
-                <span>Read more about features &amp; pricing</span>
+                <BookOpen className="w-6 h-6 text-neon-cyan" />
+                <span>Read More About Features &amp; Pricing</span>
               </Link>
             </div>
           </div>
