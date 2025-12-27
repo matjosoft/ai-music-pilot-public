@@ -284,14 +284,37 @@ export class SubscriptionService {
   /**
    * Increment trial usage counter (server-side)
    * Called after each generation for trial users
+   * Uses service role client to ensure it works in all contexts
    */
   static async incrementTrialUsage(userId: string): Promise<number> {
-    const subscription = await this.getSubscriptionServer(userId)
-    const newCount = (subscription?.trial_usage_count || 0) + 1
+    const supabase = createServiceRoleClient()
 
-    await this.updateSubscriptionServer(userId, {
-      trial_usage_count: newCount,
-    })
+    // First, get the current count using service role (bypasses RLS)
+    const { data: subscription, error: readError } = await supabase
+      .from('user_subscriptions')
+      .select('trial_usage_count')
+      .eq('user_id', userId)
+      .single()
+
+    if (readError) {
+      console.error('Error reading subscription for trial increment:', readError)
+      throw readError
+    }
+
+    const currentCount = (subscription as { trial_usage_count: number | null })?.trial_usage_count || 0
+    const newCount = currentCount + 1
+
+    // Update with the new count
+    const { error: updateError } = await supabase
+      .from('user_subscriptions')
+      // @ts-expect-error - Type inference issue with auth-helpers-nextjs 0.10.0
+      .update({ trial_usage_count: newCount })
+      .eq('user_id', userId)
+
+    if (updateError) {
+      console.error('Error updating trial usage count:', updateError)
+      throw updateError
+    }
 
     return newCount
   }
