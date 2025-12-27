@@ -15,6 +15,20 @@ function redactSensitive(data: any): any {
     return data
   }
 
+  // Handle Error objects specially to preserve their properties
+  if (data instanceof Error) {
+    return {
+      name: data.name,
+      message: data.message,
+      stack: data.stack,
+      // Include any additional enumerable properties
+      ...Object.keys(data).reduce((acc, key) => {
+        acc[key] = redactSensitive((data as any)[key])
+        return acc
+      }, {} as Record<string, any>)
+    }
+  }
+
   const sensitiveKeys = [
     'signature',
     'webhookSecret',
