@@ -104,7 +104,8 @@ export async function logUsage(
     await UsageService.logUsage(userId, actionType, songId, metadata)
 
     // If user is on trial tier, increment trial usage counter
-    const subscription = await SubscriptionService.getSubscriptionServer(userId)
+    // Use service role method to ensure it works in all contexts
+    const subscription = await SubscriptionService.getSubscriptionWithServiceRole(userId)
     if (subscription?.tier === 'trial') {
       await SubscriptionService.incrementTrialUsage(userId)
     }

@@ -64,6 +64,26 @@ export class SubscriptionService {
   }
 
   /**
+   * Get a user's subscription using service role (bypasses RLS, works in all contexts)
+   * Use this when cookie context may not be available (e.g., after async operations)
+   */
+  static async getSubscriptionWithServiceRole(userId: string): Promise<UserSubscription | null> {
+    const supabase = createServiceRoleClient()
+
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') return null // Not found
+      throw error
+    }
+    return data as UserSubscription
+  }
+
+  /**
    * Get or create a user's subscription (server-side)
    */
   static async getOrCreateSubscriptionServer(userId: string): Promise<UserSubscription> {
