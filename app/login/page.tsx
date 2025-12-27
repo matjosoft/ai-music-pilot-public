@@ -3,15 +3,29 @@
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
 export default function LoginPage() {
   const supabase = createClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
+    // Check if user just logged out
+    const loggedOut = searchParams.get('logged_out')
+
+    // If user just logged out, ensure they're actually signed out
+    if (loggedOut === 'true') {
+      supabase.auth.signOut().then(() => {
+        // Clear the logged_out parameter from URL
+        router.replace('/login')
+      })
+      return
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Only handle SIGNED_IN events, not when checking existing sessions
       if (event === 'SIGNED_IN' && session) {
         // Initialize subscription for new/existing user
         try {
@@ -27,11 +41,14 @@ export default function LoginPage() {
 
         router.push('/create')
         router.refresh()
+      } else if (event === 'SIGNED_OUT') {
+        // Ensure we stay on login page after sign out
+        router.replace('/login')
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [router, supabase])
+  }, [router, supabase, searchParams])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-dark-bg">

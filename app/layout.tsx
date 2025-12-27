@@ -3,6 +3,7 @@ import './globals.css';
 import { createServerClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import UsageIndicator from '@/components/UsageIndicator';
+import LogoutButton from '@/components/LogoutButton';
 
 export const metadata: Metadata = {
   title: 'AI Music Pilot',
@@ -42,14 +43,7 @@ export default async function RootLayout({
                     <span className="text-gray-400 text-sm">
                       {session.user.email}
                     </span>
-                    <form action="/logout" method="POST">
-                      <button
-                        type="submit"
-                        className="bg-gradient-to-r from-neon-purple to-neon-magenta hover:from-neon-magenta hover:to-neon-cyan px-4 py-2 rounded-lg transition-all duration-300 font-medium"
-                      >
-                        Logout
-                      </button>
-                    </form>
+                    <LogoutButton />
                   </>
                 ) : (
                   <Link
