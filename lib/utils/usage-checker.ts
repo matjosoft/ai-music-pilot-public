@@ -88,6 +88,7 @@ export async function checkUsageLimit(userId: string): Promise<UsageCheckRespons
 
 /**
  * Log a usage event after successful action
+ * Also increments trial usage counter for trial users
  */
 export async function logUsage(
   userId: string,
@@ -99,7 +100,14 @@ export async function logUsage(
   }
 ): Promise<void> {
   try {
+    // Log the usage event
     await UsageService.logUsage(userId, actionType, songId, metadata)
+
+    // If user is on trial tier, increment trial usage counter
+    const subscription = await SubscriptionService.getSubscriptionServer(userId)
+    if (subscription?.tier === 'trial') {
+      await SubscriptionService.incrementTrialUsage(userId)
+    }
   } catch (error) {
     // Log error but don't throw - we don't want to fail the request if logging fails
     logger.error('Error logging usage:', error)
@@ -115,6 +123,9 @@ export async function getUsageForResponse(userId: string): Promise<{
   tier: string
   periodEnd: string | null
   isTestUser: boolean
+  isInTrial: boolean
+  trialEndsAt?: string | null
+  trialUsageCount?: number
 }> {
   try {
     const stats = await UsageService.getUsageStatsServer(userId)
@@ -124,6 +135,9 @@ export async function getUsageForResponse(userId: string): Promise<{
       tier: stats.tier,
       periodEnd: stats.periodEnd,
       isTestUser: stats.isTestUser,
+      isInTrial: stats.isInTrial,
+      trialEndsAt: stats.trialEndsAt,
+      trialUsageCount: stats.trialUsageCount,
     }
   } catch (error) {
     logger.error('Error getting usage stats:', error)
@@ -133,6 +147,7 @@ export async function getUsageForResponse(userId: string): Promise<{
       tier: 'unknown',
       periodEnd: null,
       isTestUser: false,
+      isInTrial: false,
     }
   }
 }

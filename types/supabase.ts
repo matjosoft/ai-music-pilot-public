@@ -80,7 +80,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          tier: 'free' | 'pro' | 'test'
+          tier: 'free' | 'pro' | 'test' | 'trial'
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           stripe_price_id: string | null
@@ -89,6 +89,8 @@ export interface Database {
           cancel_at_period_end: boolean
           generation_limit: number
           trial_ends_at: string | null
+          trial_started_at: string | null
+          trial_usage_count: number
           is_test_user: boolean
           created_at: string
           updated_at: string
@@ -96,7 +98,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          tier?: 'free' | 'pro' | 'test'
+          tier?: 'free' | 'pro' | 'test' | 'trial'
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           stripe_price_id?: string | null
@@ -105,6 +107,8 @@ export interface Database {
           cancel_at_period_end?: boolean
           generation_limit?: number
           trial_ends_at?: string | null
+          trial_started_at?: string | null
+          trial_usage_count?: number
           is_test_user?: boolean
           created_at?: string
           updated_at?: string
@@ -112,7 +116,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          tier?: 'free' | 'pro' | 'test'
+          tier?: 'free' | 'pro' | 'test' | 'trial'
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           stripe_price_id?: string | null
@@ -121,6 +125,8 @@ export interface Database {
           cancel_at_period_end?: boolean
           generation_limit?: number
           trial_ends_at?: string | null
+          trial_started_at?: string | null
+          trial_usage_count?: number
           is_test_user?: boolean
           created_at?: string
           updated_at?: string

@@ -101,6 +101,9 @@ export class SubscriptionService {
         case 'test':
           generationLimit = -1 // unlimited
           break
+        case 'trial':
+          generationLimit = 20 // default trial limit
+          break
       }
     }
 
@@ -162,9 +165,13 @@ export class SubscriptionService {
 
   /**
    * Check if user is currently in trial period (server-side)
+   * Returns true only if user is on trial tier AND trial hasn't expired
    */
   static async isInTrial(userId: string): Promise<boolean> {
     const subscription = await this.getOrCreateSubscriptionServer(userId)
+
+    // Must be trial tier
+    if (subscription.tier !== 'trial') return false
     if (!subscription.trial_ends_at) return false
 
     const trialEnd = new Date(subscription.trial_ends_at)
@@ -235,6 +242,88 @@ export class SubscriptionService {
       stripe_price_id: null,
       cancel_at_period_end: false,
     })
+  }
+
+  /**
+   * Start a trial for a user (server-side)
+   * Converts a free user to trial tier with specified duration and limit
+   * @param userId - User ID
+   * @param trialDays - Number of days for trial (default 14)
+   * @param trialLimit - Total generation limit for trial (default 20)
+   */
+  static async startTrial(
+    userId: string,
+    trialDays: number = 14,
+    trialLimit: number = 20
+  ): Promise<UserSubscription> {
+    const now = new Date()
+    const trialEnd = new Date(now)
+    trialEnd.setDate(trialEnd.getDate() + trialDays)
+
+    return await this.updateSubscriptionServer(userId, {
+      tier: 'trial',
+      generation_limit: trialLimit,
+      trial_ends_at: trialEnd.toISOString(),
+      trial_started_at: now.toISOString(),
+      trial_usage_count: 0,
+    })
+  }
+
+  /**
+   * Downgrade expired/exhausted trial to free tier (server-side)
+   * Keeps trial_ends_at and trial_usage_count for historical reference
+   */
+  static async downgradeTrialToFree(userId: string): Promise<UserSubscription> {
+    return await this.updateSubscriptionServer(userId, {
+      tier: 'free',
+      generation_limit: 5,
+      // Keep trial_ends_at and trial_usage_count for history
+    })
+  }
+
+  /**
+   * Increment trial usage counter (server-side)
+   * Called after each generation for trial users
+   */
+  static async incrementTrialUsage(userId: string): Promise<number> {
+    const subscription = await this.getSubscriptionServer(userId)
+    const newCount = (subscription?.trial_usage_count || 0) + 1
+
+    await this.updateSubscriptionServer(userId, {
+      trial_usage_count: newCount,
+    })
+
+    return newCount
+  }
+
+  /**
+   * Check if trial has expired (by date or usage limit)
+   */
+  static async isTrialExpiredOrExhausted(userId: string): Promise<{
+    expired: boolean
+    reason?: 'date_expired' | 'limit_reached'
+  }> {
+    const subscription = await this.getSubscriptionServer(userId)
+
+    if (!subscription || subscription.tier !== 'trial') {
+      return { expired: false }
+    }
+
+    // Check date expiration
+    if (subscription.trial_ends_at) {
+      const trialEnd = new Date(subscription.trial_ends_at)
+      if (trialEnd <= new Date()) {
+        return { expired: true, reason: 'date_expired' }
+      }
+    }
+
+    // Check usage limit
+    const trialUsage = subscription.trial_usage_count || 0
+    if (trialUsage >= subscription.generation_limit) {
+      return { expired: true, reason: 'limit_reached' }
+    }
+
+    return { expired: false }
   }
 
   /**

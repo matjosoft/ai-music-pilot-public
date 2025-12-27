@@ -13,6 +13,9 @@ interface UsageStats {
   tier: string
   isTestUser: boolean
   isInTrial: boolean
+  trialUsageCount?: number
+  trialLimit?: number
+  trialEndsAt?: string | null
 }
 
 export default function SubscriptionPage() {
@@ -73,6 +76,8 @@ export default function SubscriptionPage() {
         return 'bg-neon-purple/20 text-neon-purple border-neon-purple/30'
       case 'test':
         return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+      case 'trial':
+        return 'bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30'
       default:
         return 'bg-gray-700/50 text-gray-300 border-gray-600'
     }
@@ -84,6 +89,8 @@ export default function SubscriptionPage() {
         return 'Pro'
       case 'test':
         return 'Test User'
+      case 'trial':
+        return 'Trial'
       default:
         return 'Free'
     }
@@ -211,9 +218,10 @@ export default function SubscriptionPage() {
                 {usage.tier === 'free' && 'Limited features • 5 generations per month'}
                 {usage.tier === 'pro' && 'Full access • 100 generations per month • $5/month'}
                 {usage.tier === 'test' && 'Unlimited access for testing'}
+                {usage.tier === 'trial' && `Trial • ${usage.remaining} of ${usage.limit} generations remaining`}
               </p>
             </div>
-            {usage.tier === 'free' && !usage.isTestUser && (
+            {(usage.tier === 'free' || usage.tier === 'trial') && !usage.isTestUser && (
               <div>
                 <button
                   onClick={handleUpgrade}
@@ -237,6 +245,29 @@ export default function SubscriptionPage() {
             )}
           </div>
         </div>
+
+        {/* Trial Info Section */}
+        {usage.tier === 'trial' && (
+          <div className="bg-neon-cyan/10 border border-neon-cyan/30 rounded-2xl p-6 mb-6">
+            <div className="flex items-start">
+              <svg className="w-6 h-6 text-neon-cyan mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">
+                <h3 className="font-bold text-neon-cyan mb-1">Trial Active</h3>
+                <p className="text-gray-300 text-sm mb-2">
+                  You have <span className="font-bold text-white">{usage.remaining}</span> of <span className="font-bold text-white">{usage.limit}</span> trial generations remaining.
+                  {usage.periodEnd && (
+                    <> Trial expires on <span className="font-bold text-white">{formatDate(usage.periodEnd)}</span>.</>
+                  )}
+                </p>
+                <p className="text-gray-400 text-xs">
+                  When your trial ends or you use all generations, you'll be moved to the free tier with 5 generations per month.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Usage Statistics */}
         <div className="bg-dark-card rounded-2xl shadow-xl p-6 mb-6 border border-gray-800">
@@ -301,8 +332,8 @@ export default function SubscriptionPage() {
           )}
         </div>
 
-        {/* Pricing Plans (for free users) */}
-        {usage.tier === 'free' && !usage.isTestUser && (
+        {/* Pricing Plans (for free and trial users) */}
+        {(usage.tier === 'free' || usage.tier === 'trial') && !usage.isTestUser && (
           <div className="bg-dark-card rounded-2xl shadow-xl p-6 border border-gray-800">
             <h2 className="text-2xl font-bold text-white mb-6">Upgrade Your Plan</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

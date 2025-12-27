@@ -89,7 +89,7 @@ export interface Song {
 }
 
 // Subscription types
-export type SubscriptionTier = 'free' | 'pro' | 'test'
+export type SubscriptionTier = 'free' | 'pro' | 'test' | 'trial'
 export type UsageActionType = 'generate' | 'regenerate_lyrics' | 'regenerate_metatags' | 'regenerate_with_params'
 
 export interface UserSubscription {
@@ -104,6 +104,8 @@ export interface UserSubscription {
   cancel_at_period_end: boolean
   generation_limit: number
   trial_ends_at: string | null
+  trial_started_at: string | null
+  trial_usage_count: number
   is_test_user: boolean
   created_at: string
   updated_at: string
@@ -137,4 +139,7 @@ export interface UsageStats {
   tier: SubscriptionTier
   isTestUser: boolean
   isInTrial: boolean
+  trialUsageCount?: number
+  trialLimit?: number
+  trialEndsAt?: string | null
 }
