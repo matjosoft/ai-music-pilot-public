@@ -50,6 +50,7 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
     simpleDescription: '',
     genre: 'Pop',
     mood: MOODS[0],
+    tempo: 'Medium (80-120 BPM)',
     theme: '',
     targetAudience: '',
     additionalNotes: '',
@@ -154,6 +155,24 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="tempo" className="block text-sm font-medium text-white">
+          Tempo
+        </label>
+        <select
+          id="tempo"
+          value={formData.tempo}
+          onChange={(e) => setFormData({ ...formData, tempo: e.target.value })}
+          className="w-full px-4 py-2 bg-dark-lighter border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-neon-purple focus:border-neon-purple"
+        >
+          {TEMPOS.map((tempo) => (
+            <option key={tempo} value={tempo} className="bg-dark-lighter text-white">
+              {tempo}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-2">
