@@ -108,6 +108,7 @@ export async function logUsage(
     const subscription = await SubscriptionService.getSubscriptionWithServiceRole(userId)
     if (subscription?.tier === 'trial') {
       await SubscriptionService.incrementTrialUsage(userId)
+      logger.info('logged usage for user:', userId)
     }
   } catch (error) {
     // Log error but don't throw - we don't want to fail the request if logging fails
