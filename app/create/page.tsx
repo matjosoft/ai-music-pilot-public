@@ -35,10 +35,13 @@ export default function CreatePage() {
         };
       } else {
         // Custom mode: send vision, genre, mood, tempo
-        // Include theme in vision if provided, use default tempo
+        // Include theme in vision if provided
         const visionWithTheme = formData.theme
           ? `${formData.simpleDescription}\n\nTheme: ${formData.theme}`
           : formData.simpleDescription;
+
+        // Normalize tempo: remove BPM info if present (e.g., "Medium (80-120 BPM)" -> "Medium")
+        const normalizedTempo = formData.tempo?.split(' (')[0] || 'Medium';
 
         requestBody = {
           songName: formData.songName,
@@ -46,7 +49,7 @@ export default function CreatePage() {
           vision: visionWithTheme,
           genre: formData.genre,
           mood: formData.mood,
-          tempo: 'Medium',
+          tempo: normalizedTempo,
           wordDensity: formData.wordDensity || 'medium',
           instrumental: formData.instrumental || false,
           useCustomLyrics: formData.useCustomLyrics || false,

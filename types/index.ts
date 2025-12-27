@@ -12,6 +12,7 @@ export interface SongFormData {
   artistName?: string;
   genre?: string;
   mood?: string;
+  tempo?: string;
   theme?: string;
   targetAudience?: string;
   additionalNotes?: string;
