@@ -75,6 +75,32 @@ export default async function Home() {
             </div>
           </div>
 
+          {/* Video Section */}
+          <div className="mb-20">
+            <div className="max-w-4xl mx-auto">
+              <a
+                href="https://youtu.be/5_bjeBFxWME"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-neon-purple/30 group hover:border-neon-magenta/50 transition-all duration-300"
+              >
+                <Image
+                  src="/assets/youtube-thumbnail.png"
+                  alt="Watch AiMP Demo Video"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                  <div className="bg-neon-magenta/90 group-hover:bg-neon-magenta rounded-full p-6 group-hover:scale-110 transition-all duration-300 shadow-2xl">
+                    <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+
           {/* Features Section */}
           <div className="grid md:grid-cols-3 gap-8 mb-20">
             <div className="bg-dark-card p-8 rounded-2xl shadow-xl border border-neon-purple/20 hover:border-neon-purple/50 transition-all duration-300 hover:shadow-neon-purple">
