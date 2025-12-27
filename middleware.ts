@@ -4,6 +4,12 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+
+  // Skip middleware for logout route to prevent session refresh
+  if (req.nextUrl.pathname === '/logout') {
+    return res
+  }
+
   const supabase = createMiddlewareClient({ req, res })
 
   const {
@@ -30,6 +36,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    '/logout',
     '/create/:path*',
     '/dashboard/:path*',
     '/subscription/:path*',
