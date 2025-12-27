@@ -64,6 +64,26 @@ export class SubscriptionService {
   }
 
   /**
+   * Get a user's subscription using service role (bypasses RLS, works in all contexts)
+   * Use this when cookie context may not be available (e.g., after async operations)
+   */
+  static async getSubscriptionWithServiceRole(userId: string): Promise<UserSubscription | null> {
+    const supabase = createServiceRoleClient()
+
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') return null // Not found
+      throw error
+    }
+    return data as UserSubscription
+  }
+
+  /**
    * Get or create a user's subscription (server-side)
    */
   static async getOrCreateSubscriptionServer(userId: string): Promise<UserSubscription> {
@@ -100,6 +120,9 @@ export class SubscriptionService {
           break
         case 'test':
           generationLimit = -1 // unlimited
+          break
+        case 'trial':
+          generationLimit = 20 // default trial limit
           break
       }
     }
@@ -162,9 +185,13 @@ export class SubscriptionService {
 
   /**
    * Check if user is currently in trial period (server-side)
+   * Returns true only if user is on trial tier AND trial hasn't expired
    */
   static async isInTrial(userId: string): Promise<boolean> {
     const subscription = await this.getOrCreateSubscriptionServer(userId)
+
+    // Must be trial tier
+    if (subscription.tier !== 'trial') return false
     if (!subscription.trial_ends_at) return false
 
     const trialEnd = new Date(subscription.trial_ends_at)
@@ -235,6 +262,111 @@ export class SubscriptionService {
       stripe_price_id: null,
       cancel_at_period_end: false,
     })
+  }
+
+  /**
+   * Start a trial for a user (server-side)
+   * Converts a free user to trial tier with specified duration and limit
+   * @param userId - User ID
+   * @param trialDays - Number of days for trial (default 14)
+   * @param trialLimit - Total generation limit for trial (default 20)
+   */
+  static async startTrial(
+    userId: string,
+    trialDays: number = 14,
+    trialLimit: number = 20
+  ): Promise<UserSubscription> {
+    const now = new Date()
+    const trialEnd = new Date(now)
+    trialEnd.setDate(trialEnd.getDate() + trialDays)
+
+    return await this.updateSubscriptionServer(userId, {
+      tier: 'trial',
+      generation_limit: trialLimit,
+      trial_ends_at: trialEnd.toISOString(),
+      trial_started_at: now.toISOString(),
+      trial_usage_count: 0,
+    })
+  }
+
+  /**
+   * Downgrade expired/exhausted trial to free tier (server-side)
+   * Keeps trial_ends_at and trial_usage_count for historical reference
+   */
+  static async downgradeTrialToFree(userId: string): Promise<UserSubscription> {
+    return await this.updateSubscriptionServer(userId, {
+      tier: 'free',
+      generation_limit: 5,
+      // Keep trial_ends_at and trial_usage_count for history
+    })
+  }
+
+  /**
+   * Increment trial usage counter (server-side)
+   * Called after each generation for trial users
+   * Uses service role client to ensure it works in all contexts
+   */
+  static async incrementTrialUsage(userId: string): Promise<number> {
+    const supabase = createServiceRoleClient()
+
+    // First, get the current count using service role (bypasses RLS)
+    const { data: subscription, error: readError } = await supabase
+      .from('user_subscriptions')
+      .select('trial_usage_count')
+      .eq('user_id', userId)
+      .single()
+
+    if (readError) {
+      console.error('Error reading subscription for trial increment:', readError)
+      throw readError
+    }
+
+    const currentCount = (subscription as { trial_usage_count: number | null })?.trial_usage_count || 0
+    const newCount = currentCount + 1
+
+    // Update with the new count
+    const { error: updateError } = await supabase
+      .from('user_subscriptions')
+      // @ts-expect-error - Type inference issue with auth-helpers-nextjs 0.10.0
+      .update({ trial_usage_count: newCount })
+      .eq('user_id', userId)
+
+    if (updateError) {
+      console.error('Error updating trial usage count:', updateError)
+      throw updateError
+    }
+
+    return newCount
+  }
+
+  /**
+   * Check if trial has expired (by date or usage limit)
+   */
+  static async isTrialExpiredOrExhausted(userId: string): Promise<{
+    expired: boolean
+    reason?: 'date_expired' | 'limit_reached'
+  }> {
+    const subscription = await this.getSubscriptionServer(userId)
+
+    if (!subscription || subscription.tier !== 'trial') {
+      return { expired: false }
+    }
+
+    // Check date expiration
+    if (subscription.trial_ends_at) {
+      const trialEnd = new Date(subscription.trial_ends_at)
+      if (trialEnd <= new Date()) {
+        return { expired: true, reason: 'date_expired' }
+      }
+    }
+
+    // Check usage limit
+    const trialUsage = subscription.trial_usage_count || 0
+    if (trialUsage >= subscription.generation_limit) {
+      return { expired: true, reason: 'limit_reached' }
+    }
+
+    return { expired: false }
   }
 
   /**

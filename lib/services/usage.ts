@@ -124,7 +124,39 @@ export class UsageService {
       }
     }
 
-    // Check if in trial period
+    // Handle trial tier - uses total usage, not period-based
+    if (subscription.tier === 'trial') {
+      const trialCheck = await SubscriptionService.isTrialExpiredOrExhausted(userId)
+
+      if (trialCheck.expired) {
+        // Downgrade to free immediately
+        await SubscriptionService.downgradeTrialToFree(userId)
+
+        return {
+          allowed: false,
+          remaining: 0,
+          limit: subscription.generation_limit,
+          reason: trialCheck.reason === 'date_expired'
+            ? 'Your trial has expired. Please upgrade to Pro to continue generating songs.'
+            : 'You have used all your trial generations. Please upgrade to Pro to continue.',
+          isTestUser: false,
+          isInTrial: false,
+        }
+      }
+
+      const trialUsed = subscription.trial_usage_count || 0
+      const trialRemaining = subscription.generation_limit - trialUsed
+
+      return {
+        allowed: true,
+        remaining: trialRemaining,
+        limit: subscription.generation_limit,
+        isTestUser: false,
+        isInTrial: true,
+      }
+    }
+
+    // Check if in trial period (legacy check for non-trial tiers)
     const isInTrial = await SubscriptionService.isInTrial(userId)
 
     // Check if billing period has expired and needs reset
@@ -177,9 +209,30 @@ export class UsageService {
    */
   static async getUsageStatsServer(userId: string): Promise<UsageStats> {
     const subscription = await SubscriptionService.getOrCreateSubscriptionServer(userId)
-    const currentUsage = await this.getCurrentPeriodUsage(userId)
     const isInTrial = await SubscriptionService.isInTrial(userId)
 
+    // For trial tier, use trial_usage_count instead of period-based counting
+    if (subscription.tier === 'trial') {
+      const trialUsed = subscription.trial_usage_count || 0
+      const remaining = Math.max(0, subscription.generation_limit - trialUsed)
+
+      return {
+        currentPeriodUsage: trialUsed,
+        limit: subscription.generation_limit,
+        remaining,
+        periodStart: subscription.trial_started_at,
+        periodEnd: subscription.trial_ends_at,
+        tier: subscription.tier,
+        isTestUser: false,
+        isInTrial: true,
+        // Trial-specific fields
+        trialUsageCount: trialUsed,
+        trialLimit: subscription.generation_limit,
+        trialEndsAt: subscription.trial_ends_at,
+      }
+    }
+
+    const currentUsage = await this.getCurrentPeriodUsage(userId)
     const limit = subscription.generation_limit
     const remaining = subscription.is_test_user ? -1 : Math.max(0, limit - currentUsage)
 

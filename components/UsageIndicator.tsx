@@ -9,6 +9,7 @@ interface UsageData {
   tier: string
   periodEnd: string | null
   isTestUser: boolean
+  isInTrial?: boolean
 }
 
 export default function UsageIndicator() {
@@ -62,6 +63,30 @@ export default function UsageIndicator() {
           TEST USER
         </span>
         <span className="text-purple-200">Unlimited</span>
+      </Link>
+    )
+  }
+
+  // Trial users see trial badge with remaining count
+  if (usage.tier === 'trial') {
+    const percentage = (usage.remaining / usage.limit) * 100
+    const isLow = percentage <= 20
+    const isMedium = percentage <= 50
+
+    const getStatusColor = () => {
+      if (isLow) return 'text-red-300'
+      if (isMedium) return 'text-yellow-300'
+      return 'text-cyan-300'
+    }
+
+    return (
+      <Link href="/subscription" className="flex items-center space-x-2 text-sm hover:text-purple-200 transition-colors">
+        <span className="bg-cyan-500 text-black px-2 py-1 rounded text-xs font-bold">
+          TRIAL
+        </span>
+        <span className={getStatusColor()}>
+          {usage.remaining}/{usage.limit}
+        </span>
       </Link>
     )
   }
