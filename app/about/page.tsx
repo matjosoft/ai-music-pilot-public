@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, Music, RefreshCw, PenTool, Crown, Settings, CreditCard, LayoutDashboard, PlusCircle } from 'lucide-react';
 
@@ -150,6 +151,45 @@ export default function AboutPage() {
                   <li>AI will add metatags and create a matching style description</li>
                 </ol>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Video Tutorial */}
+        <section id="video-tutorial" className="bg-dark-card rounded-2xl shadow-xl p-8 mb-8 border border-neon-purple/30 scroll-mt-20">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-gradient-to-br from-neon-magenta/20 to-neon-purple/20 w-12 h-12 rounded-xl flex items-center justify-center border border-neon-magenta/30">
+              <Sparkles className="w-6 h-6 text-neon-magenta" />
+            </div>
+            <h2 className="text-2xl font-bold text-white">See AI Music Pilot in Action</h2>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-gray-300 leading-relaxed">
+              Watch this quick 2-minute walkthrough to see how AI Music Pilot helps you create professional Suno prompts and lyrics in seconds.
+            </p>
+
+            <div className="max-w-3xl mx-auto">
+              <a
+                href="https://youtu.be/5_bjeBFxWME"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block relative aspect-video rounded-xl overflow-hidden shadow-2xl border border-neon-purple/30 group hover:border-neon-magenta/50 transition-all duration-300"
+              >
+                <Image
+                  src="/assets/youtube-thumbnail.png"
+                  alt="Watch AI Music Pilot Demo - Tutorial Video"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                  <div className="bg-neon-magenta/90 group-hover:bg-neon-magenta rounded-full p-6 group-hover:scale-110 transition-all duration-300 shadow-2xl">
+                    <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                </div>
+              </a>
             </div>
           </div>
         </section>
