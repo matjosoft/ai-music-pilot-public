@@ -35,8 +35,11 @@ export default async function Home() {
                 for Suno AI
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-300 mb-2 max-w-3xl mx-auto leading-relaxed">
               Your AI-powered songwriting assistant — Generate professional lyrics, style prompts, and metatags optimized for Suno's Custom Mode
+            </p>
+            <p className="text-sm text-gray-500 mb-10">
+              Suno account required
             </p>
 
             {/* Trust Badges */}
@@ -73,31 +76,15 @@ export default async function Home() {
                 <span>Read More About Features &amp; Pricing</span>
               </Link>
             </div>
-          </div>
 
-          {/* Video Section */}
-          <div className="mb-20">
-            <div className="max-w-4xl mx-auto">
-              <a
-                href="https://youtu.be/5_bjeBFxWME"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-neon-purple/30 group hover:border-neon-magenta/50 transition-all duration-300"
+            <div className="mt-6">
+              <Link
+                href="/about#video-tutorial"
+                className="inline-flex items-center space-x-2 text-gray-400 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-neon-purple hover:to-neon-cyan transition-all duration-300 text-base group"
               >
-                <Image
-                  src="/assets/youtube-thumbnail.png"
-                  alt="Watch AiMP Demo Video"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                  <div className="bg-neon-magenta/90 group-hover:bg-neon-magenta rounded-full p-6 group-hover:scale-110 transition-all duration-300 shadow-2xl">
-                    <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                </div>
-              </a>
+                <span>Watch a quick demo video</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+              </Link>
             </div>
           </div>
 
