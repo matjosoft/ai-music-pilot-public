@@ -28,6 +28,84 @@ export function sanitizeString(input: string): string {
 }
 
 /**
+ * Sanitize user input specifically for LLM prompts
+ * Protects against prompt injection attacks while preserving legitimate content
+ */
+export function sanitizePromptInput(input: string): string {
+  if (typeof input !== 'string') {
+    return ''
+  }
+
+  return input
+    .trim()
+    // Remove null bytes
+    .replace(/\0/g, '')
+    // Remove control characters except newlines and tabs
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Normalize multiple newlines (prevent injection separators)
+    .replace(/\n{3,}/g, '\n\n')
+    // Remove common prompt injection patterns (case-insensitive)
+    .replace(/ignore\s+(all\s+)?(previous\s+)?(instructions?|prompts?|rules?)/gi, '[FILTERED]')
+    .replace(/forget\s+(all\s+)?(previous\s+)?(instructions?|prompts?|rules?)/gi, '[FILTERED]')
+    .replace(/new\s+(system\s+)?instructions?:/gi, '[FILTERED]')
+    .replace(/system\s+(prompt|instructions?):/gi, '[FILTERED]')
+    .replace(/override\s+(instructions?|prompts?|rules?)/gi, '[FILTERED]')
+    .replace(/disregard\s+(all\s+)?(previous\s+)?(instructions?|prompts?|rules?)/gi, '[FILTERED]')
+    // Remove attempts to break out of context
+    .replace(/<\|system\|>/gi, '[FILTERED]')
+    .replace(/<\|assistant\|>/gi, '[FILTERED]')
+    .replace(/\[SYSTEM\]/gi, '[FILTERED]')
+    .replace(/\[INST\]/gi, '[FILTERED]')
+    .replace(/\[\/INST\]/gi, '[FILTERED]')
+}
+
+/**
+ * Detect potential prompt injection attempts
+ * Returns true if suspicious patterns are found
+ */
+export function detectPromptInjection(input: string): boolean {
+  if (typeof input !== 'string') {
+    return false
+  }
+
+  const injectionPatterns = [
+    // Common instruction override patterns
+    /ignore\s+(all\s+)?(previous\s+)?(instructions?|prompts?|rules?)/i,
+    /forget\s+(all\s+)?(previous\s+)?(instructions?|prompts?|rules?)/i,
+    /disregard\s+(all\s+)?(previous\s+)?(instructions?|prompts?|rules?)/i,
+    /new\s+(system\s+)?instructions?:/i,
+    /system\s+(prompt|instructions?):/i,
+    /override\s+(instructions?|prompts?|rules?)/i,
+
+    // Role manipulation
+    /you\s+are\s+(now\s+)?(a|an)\s+/i,
+    /act\s+as\s+(a|an)\s+/i,
+    /pretend\s+to\s+be/i,
+    /simulate\s+(a|an)\s+/i,
+
+    // System tokens and delimiters
+    /<\|system\|>/i,
+    /<\|assistant\|>/i,
+    /<\|user\|>/i,
+    /\[SYSTEM\]/i,
+    /\[INST\]/i,
+    /\[\/INST\]/i,
+    /###\s*System/i,
+    /###\s*Instruction/i,
+
+    // Excessive newlines (context breaking)
+    /\n{5,}/,
+
+    // Prompt leakage attempts
+    /repeat\s+(your\s+)?(instructions?|prompt|system\s+prompt)/i,
+    /show\s+(me\s+)?(your\s+)?(instructions?|prompt|system\s+prompt)/i,
+    /what\s+(are\s+)?(your\s+)?(instructions?|prompt|system\s+prompt)/i,
+  ]
+
+  return injectionPatterns.some(pattern => pattern.test(input))
+}
+
+/**
  * Escape HTML special characters to prevent XSS
  */
 export function escapeHtml(input: string): string {

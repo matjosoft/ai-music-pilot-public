@@ -46,14 +46,19 @@ export function generateProjectPrompt(
   wordDensity: string = 'medium',
   instrumental: boolean = false
 ): string {
+  // Import sanitization - will be added at call site
+  // Prompts now use XML delimiters to separate user input from instructions
+
   // If instrumental mode is enabled, generate a simple instrumental-only prompt
   if (instrumental) {
     return `Create an instrumental music project for Suno AI Custom Mode based on:
 
-Vision: ${vision}
-Genre: ${genre}
-Mood: ${mood}
-Tempo: ${tempo}
+<user_input>
+<vision>${vision}</vision>
+<genre>${genre}</genre>
+<mood>${mood}</mood>
+<tempo>${tempo}</tempo>
+</user_input>
 
 IMPORTANT: This is an INSTRUMENTAL track with NO LYRICS. Generate only a single [Instrumental] tag.
 
@@ -94,11 +99,15 @@ Respond in JSON format:
 
   return `Create a music project for Suno AI Custom Mode based on:
 
-Vision: ${vision}
-Genre: ${genre}
-Mood: ${mood}
-Tempo: ${tempo}
-Word Density: ${wordDensity.toUpperCase()} - ${densityGuidance}
+<user_input>
+<vision>${vision}</vision>
+<genre>${genre}</genre>
+<mood>${mood}</mood>
+<tempo>${tempo}</tempo>
+<word_density>${wordDensity}</word_density>
+</user_input>
+
+Word Density Guidance: ${wordDensity.toUpperCase()} - ${densityGuidance}
 
 Generate:
 
@@ -161,12 +170,15 @@ export function regenerateLyricsPrompt(
 
   return `Regenerate the complete lyrics for this music project while maintaining consistency with the style.
 
-Current Lyrics:
+<user_input>
+<current_lyrics>
 ${currentLyrics}
-
-Style: ${style}${densityInstruction}
-
-${instructions ? `User Instructions: ${instructions}` : ''}
+</current_lyrics>
+<style>${style}</style>
+${instructions ? `<instructions>${instructions}</instructions>` : ''}
+${wordDensity ? `<word_density>${wordDensity}</word_density>` : ''}
+</user_input>
+${densityInstruction}
 
 Generate new lyrics with the same structure (same sections) but different content. Keep the metatags format consistent with the style.${wordDensity ? ' Follow the word density guideline strictly for verses and chorus.' : ''}
 
@@ -184,10 +196,12 @@ export function regenerateMetatagsPrompt(
 ): string {
   return `Regenerate only the metatags for this music project. Keep the actual lyrics text EXACTLY the same, but update the instrumentation and arrangement instructions in the metatags.
 
-Current Lyrics with Metatags:
+<user_input>
+<lyrics>
 ${lyrics}
-
-Style: ${style}
+</lyrics>
+<style>${style}</style>
+</user_input>
 
 Generate new metatags that:
 1. Match the style description
@@ -210,12 +224,13 @@ export function regenerateStylePrompt(
 ): string {
   return `Regenerate the style description for this music project.
 
-Lyrics:
+<user_input>
+<lyrics>
 ${lyrics}
-
-Current Style: ${currentStyle}
-
-${instructions ? `User Instructions: ${instructions}` : ''}
+</lyrics>
+<current_style>${currentStyle}</current_style>
+${instructions ? `<instructions>${instructions}</instructions>` : ''}
+</user_input>
 
 Generate a new comma-separated style description that:
 1. Matches the mood and content of the lyrics
@@ -239,13 +254,15 @@ export function generateCustomLyricsPrompt(
 ): string {
   return `Enhance the user's custom lyrics for Suno AI Custom Mode by adding instrumentation metatags.
 
-USER'S VISION: ${vision}
-GENRE: ${genre}
-MOOD: ${mood}
-TEMPO: ${tempo}
-
-USER'S CUSTOM LYRICS:
+<user_input>
+<vision>${vision}</vision>
+<genre>${genre}</genre>
+<mood>${mood}</mood>
+<tempo>${tempo}</tempo>
+<custom_lyrics>
 ${customLyrics}
+</custom_lyrics>
+</user_input>
 
 YOUR TASK:
 1. Keep ALL the lyrics text EXACTLY as the user wrote them - do not change any words
@@ -275,7 +292,7 @@ Respond in JSON format:
     {
       "title": "Song title based on lyrics content",
       "lyrics": "Enhanced lyrics with instrumentation metatags (keep original lyrics text intact)...",
-      "style": "comma, separated, style, elements matching ${genre}, ${mood}..."
+      "style": "comma, separated, style, elements matching the genre and mood..."
     }
   ]
 }`;
@@ -295,19 +312,25 @@ export function generateArtistModePrompt(
 
   const densityGuidance = densityInstructions[wordDensity as keyof typeof densityInstructions] || densityInstructions.medium;
 
-  return `Create a music project for Suno AI Custom Mode in the style of "${artistName}" with the song title "${title}".
+  return `Create a music project for Suno AI Custom Mode in the style of an artist.
+
+<user_input>
+<artist_name>${artistName}</artist_name>
+<song_title>${title}</song_title>
+<word_density>${wordDensity}</word_density>
+</user_input>
 
 Your task is to:
-1. Analyze the musical style, genre, and characteristics of "${artistName}"
+1. Analyze the musical style, genre, and characteristics of the specified artist
 2. Create a song that authentically captures their artistic style
-3. Generate lyrics and instrumentation that would fit "${artistName}"'s typical sound
+3. Generate lyrics and instrumentation that would fit their typical sound
 
 IMPORTANT INSTRUCTIONS:
-- Study the typical genre, mood, tempo, and production style of "${artistName}"
+- Study the typical genre, mood, tempo, and production style
 - Write lyrics that match their lyrical themes, storytelling style, and vocabulary
-- Use instrumentation and production techniques characteristic of "${artistName}"'s music
+- Use instrumentation and production techniques characteristic of this artist
 - Match the vocal style (range, delivery, emotion) typical of this artist
-- Create a style description that captures the essence of "${artistName}"'s sound
+- Create a style description that captures the essence of their sound
 
 Word Density: ${wordDensity.toUpperCase()} - ${densityGuidance}
 
@@ -316,9 +339,9 @@ Generate:
 1. LYRICS: Complete song lyrics with metatag structure
    - Use [Intro], [Verse 1], [Chorus], [Verse 2], [Bridge], [Outro]
    - Add [Instrumental] or other instructions where appropriate
-   - Write lyrics that sound like they could be from "${artistName}"
+   - Write lyrics that sound like they could be from this artist
    - IMPORTANT: Follow the word density guideline strictly for the verses and chorus
-   - Use backing vocals in parentheses where appropriate, especially if typical of "${artistName}"'s style
+   - Use backing vocals in parentheses where appropriate, especially if typical of this artist's style
    - Each section should have a metatag describing instrumentation typical of this artist
    - Example format:
      [Intro: acoustic guitar, soft piano]
@@ -332,20 +355,20 @@ Generate:
      Add backing vocals using parentheses (yeah yeah)
 
 2. STYLE: Comma-separated style description for "Style of Music" field
-   - Genre and subgenre characteristic of "${artistName}"
+   - Genre and subgenre characteristic of this artist
    - Specific instruments this artist typically uses
-   - Vocal style matching "${artistName}" (gender, voice type, delivery)
+   - Vocal style matching this artist (gender, voice type, delivery)
    - Technical elements and production style of this artist
    - Tempo and key if relevant to their style
-   - Mood and atmosphere typical of "${artistName}"'s music
+   - Mood and atmosphere typical of this artist's music
 
 Respond in JSON format:
 {
   "songs": [
     {
       "title": "${title}",
-      "lyrics": "Complete lyrics with metatags in the style of ${artistName}...",
-      "style": "comma, separated, style, elements, matching, ${artistName}..."
+      "lyrics": "Complete lyrics with metatags in the artist's style...",
+      "style": "comma, separated, style, elements, matching, the, artist..."
     }
   ]
 }`;

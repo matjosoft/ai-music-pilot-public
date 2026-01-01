@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateAIResponse } from '@/lib/ai-client';
+import { generateAIResponse, LyricsResponseSchema } from '@/lib/ai-client';
 import { SYSTEM_PROMPT, regenerateLyricsPrompt } from '@/lib/prompts';
 import { createServerClient } from '@/lib/supabase/server';
 import { SongService } from '@/lib/services/songs';
 import { SongVersionService } from '@/lib/services/song-versions';
 import { checkUsageLimit, logUsage, getUsageForResponse } from '@/lib/utils/usage-checker';
+import { detectPromptInjection, sanitizePromptInput } from '@/lib/utils/validation';
+import { logger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +36,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Fetch existing song with active version
+    // 4. Check for prompt injection attempts
+    const inputsToCheck = [currentLyrics, style];
+    if (instructions) {
+      inputsToCheck.push(instructions);
+    }
+
+    for (const input of inputsToCheck) {
+      if (detectPromptInjection(input)) {
+        logger.security('prompt_injection_detected', {
+          userId: user.id,
+          endpoint: '/api/regenerate',
+          inputSample: input.substring(0, 100)
+        });
+
+        return NextResponse.json(
+          {
+            error: 'Input contains suspicious patterns that may be attempting prompt injection. Please rephrase your input.',
+            code: 'PROMPT_INJECTION_DETECTED'
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 5. Fetch existing song with active version
     const song = await SongService.getSongServer(user.id, songId)
 
     if (!song) {
@@ -53,8 +79,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Generate user prompt
-    const userPrompt = regenerateLyricsPrompt(currentLyrics, style, instructions, wordDensity);
+    // 6. Sanitize inputs for LLM prompts
+    const sanitizedCurrentLyrics = sanitizePromptInput(currentLyrics);
+    const sanitizedStyle = sanitizePromptInput(style);
+    const sanitizedInstructions = instructions ? sanitizePromptInput(instructions) : undefined;
+
+    // 7. Generate user prompt
+    const userPrompt = regenerateLyricsPrompt(sanitizedCurrentLyrics, sanitizedStyle, sanitizedInstructions, wordDensity);
 
     // 6. Call AI API (supports both Anthropic and OpenAI)
     const response = await generateAIResponse({
@@ -62,14 +93,31 @@ export async function POST(request: NextRequest) {
       userPrompt,
     });
 
-    // 7. Parse JSON response
+    // 8. Parse JSON response
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(response.content);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', response.content);
+      logger.error('Failed to parse AI response:', response.content);
       return NextResponse.json(
         { error: 'Invalid response format from AI' },
+        { status: 500 }
+      );
+    }
+
+    // 9. Validate parsed response with Zod schema
+    const validationResult = LyricsResponseSchema.safeParse(parsedResponse);
+    if (!validationResult.success) {
+      logger.error('AI response failed schema validation:', {
+        errors: validationResult.error?.errors || validationResult.error,
+        errorDetails: JSON.stringify(validationResult.error, null, 2),
+        response: parsedResponse,
+        responseKeys: Object.keys(parsedResponse),
+        hasLyrics: !!parsedResponse.lyrics,
+        lyricsLength: parsedResponse.lyrics?.length
+      });
+      return NextResponse.json(
+        { error: 'AI response did not match expected format' },
         { status: 500 }
       );
     }
