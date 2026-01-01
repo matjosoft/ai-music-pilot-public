@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
+import { z } from 'zod';
 
 export type AIProvider = 'anthropic' | 'openai';
 
@@ -11,6 +12,36 @@ export interface AIMessage {
 export interface AIResponse {
   content: string;
 }
+
+// Zod schemas for AI response validation
+export const SongSchema = z.object({
+  title: z.string().min(1).max(200),
+  lyrics: z.string().min(1).max(10000),
+  style: z.string().min(1).max(500),
+});
+
+export const SongResponseSchema = z.object({
+  songs: z.array(SongSchema).min(1).max(1),
+});
+
+export const LyricsResponseSchema = z.object({
+  lyrics: z.string().min(1).max(10000),
+});
+
+export const MetatagsResponseSchema = z.object({
+  style: z.string().min(1).max(500),
+  title: z.string().min(1).max(200),
+});
+
+export const StyleResponseSchema = z.object({
+  style: z.string().min(1).max(500),
+  reasoning: z.string().optional(),
+});
+
+export type SongResponse = z.infer<typeof SongResponseSchema>;
+export type LyricsResponse = z.infer<typeof LyricsResponseSchema>;
+export type MetatagsResponse = z.infer<typeof MetatagsResponseSchema>;
+export type StyleResponse = z.infer<typeof StyleResponseSchema>;
 
 let _anthropic: Anthropic | null = null;
 let _openai: OpenAI | null = null;
