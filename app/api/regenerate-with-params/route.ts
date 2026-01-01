@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
     const validationResult = SongResponseSchema.safeParse(parsedResponse);
     if (!validationResult.success) {
       logger.error('AI response failed schema validation:', {
-        errors: validationResult.error?.errors || validationResult.error,
+        errors: validationResult.error.issues,
         errorDetails: JSON.stringify(validationResult.error, null, 2),
         response: parsedResponse,
         responseKeys: Object.keys(parsedResponse),
