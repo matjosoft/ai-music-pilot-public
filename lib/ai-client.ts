@@ -122,10 +122,10 @@ export async function generateAIResponse(options: GenerateOptions): Promise<AIRe
       completionParams.max_tokens = maxTokens;
     }
 
-    const startTime = Date.now();
+    //const startTime = Date.now();
     const completion = await openai.chat.completions.create(completionParams);
-    const duration = (Date.now() - startTime) / 1000;
-    console.log(`OpenAI API call completed in ${duration.toFixed(2)} seconds`);
+    //const duration = (Date.now() - startTime) / 1000;
+    //console.log(`OpenAI API call completed in ${duration.toFixed(2)} seconds`);
 
     const content = completion.choices[0]?.message?.content || '';
     return { content };
