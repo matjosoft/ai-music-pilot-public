@@ -67,7 +67,7 @@ Generate:
 1. LYRICS: Only the following:
    [Instrumental]
 
-2. STYLE: Comma-separated style description for "Style of Music" field
+2. STYLE: Comma-separated style description for "Style of Music" field (keep under 1000 characters)
    - Genre and subgenre
    - Specific instruments
    - Instrumental focus (no vocals)
@@ -129,7 +129,7 @@ Generate:
      Main lyrics here (backing vocals here)
      Add backing vocals using parentheses (yeah yeah)
 
-2. STYLE: Comma-separated style description for "Style of Music" field
+2. STYLE: Comma-separated style description for "Style of Music" field (keep under 1000 characters)
    - Genre and subgenre
    - Specific instruments
    - Vocal style (gender, voice type, delivery)
@@ -212,7 +212,7 @@ Generate new metatags that:
 
 Respond in JSON format:
 {
-  "style": "updated, comma, separated, style, description...",
+  "style": "updated, comma, separated, style, description (keep under 1000 characters)...",
   "title": "New compelling song title"
 }`;
 }
@@ -232,7 +232,7 @@ ${lyrics}
 ${instructions ? `<instructions>${instructions}</instructions>` : ''}
 </user_input>
 
-Generate a new comma-separated style description that:
+Generate a new comma-separated style description (keep under 1000 characters) that:
 1. Matches the mood and content of the lyrics
 2. Provides detailed instrumentation
 3. Includes vocal style details
@@ -269,7 +269,7 @@ YOUR TASK:
 2. Enhance each section tag (like [Verse 1], [Chorus], etc.) by adding instrumentation details
 3. The format should be: [Section: instrumentation details]
 4. If a tag already has instrumentation (e.g., [Verse 1: some details]), REPLACE the existing instrumentation with new instrumentation that matches the user's vision, genre, and mood
-5. Generate a style description that matches the vision, genre, mood, and tempo
+5. Generate a style description that matches the vision, genre, mood, and tempo (keep under 1000 characters)
 6. Create a fitting song title based on the lyrics content
 
 INSTRUMENTATION ENHANCEMENT RULES:
@@ -354,7 +354,7 @@ Generate:
      Main lyrics here (backing vocals here)
      Add backing vocals using parentheses (yeah yeah)
 
-2. STYLE: Comma-separated style description for "Style of Music" field
+2. STYLE: Comma-separated style description for "Style of Music" field (keep under 1000 characters)
    - Genre and subgenre characteristic of this artist
    - Specific instruments this artist typically uses
    - Vocal style matching this artist (gender, voice type, delivery)

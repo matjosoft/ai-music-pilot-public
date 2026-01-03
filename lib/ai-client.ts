@@ -17,7 +17,7 @@ export interface AIResponse {
 export const SongSchema = z.object({
   title: z.string().min(1).max(200),
   lyrics: z.string().min(1).max(10000),
-  style: z.string().min(1).max(500),
+  style: z.string().min(1).max(1000),
 });
 
 export const SongResponseSchema = z.object({
@@ -29,12 +29,12 @@ export const LyricsResponseSchema = z.object({
 });
 
 export const MetatagsResponseSchema = z.object({
-  style: z.string().min(1).max(500),
+  style: z.string().min(1).max(1000),
   title: z.string().min(1).max(200),
 });
 
 export const StyleResponseSchema = z.object({
-  style: z.string().min(1).max(500),
+  style: z.string().min(1).max(1000),
   reasoning: z.string().optional(),
 });
 
