@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import TrialRequestForm from '@/components/TrialRequestForm'
 
 interface UsageStats {
   currentPeriodUsage: number
@@ -245,6 +246,13 @@ export default function SubscriptionPage() {
             )}
           </div>
         </div>
+
+        {/* Trial Request Section - Only show for free users not on trial */}
+        {usage.tier === 'free' && !usage.isTestUser && (
+          <div className="mb-6">
+            <TrialRequestForm compact />
+          </div>
+        )}
 
         {/* Trial Info Section */}
         {usage.tier === 'trial' && (

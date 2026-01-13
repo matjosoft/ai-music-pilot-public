@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Sparkles, ArrowRight, Shield, DollarSign, Youtube, Zap, BookOpen } from 'lucide-react';
+import { Sparkles, ArrowRight, Shield, DollarSign, Youtube, Zap, BookOpen, Gift } from 'lucide-react';
 import { createServerClient } from '@/lib/supabase/server';
 
 export default async function Home() {
@@ -57,6 +57,51 @@ export default async function Home() {
                 <span className="text-gray-200 text-sm font-medium">YouTube Safe</span>
               </div>
             </div>
+
+            {/* Trial Promo Banner - Only for non-logged in users */}
+            {!session && (
+              <div className="mb-10 max-w-2xl mx-auto">
+                <div className="bg-gradient-to-r from-neon-magenta/20 via-neon-purple/20 to-neon-cyan/20 border-2 border-neon-magenta/40 rounded-2xl p-6 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-neon-magenta to-neon-purple text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
+                    LIMITED TIME
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-neon-purple/30 to-neon-magenta/30 p-3 rounded-xl border border-neon-purple/40 flex-shrink-0">
+                      <Gift className="w-8 h-8 text-neon-magenta" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        Free Trial: 30 Song Generations!
+                      </h3>
+                      <p className="text-gray-300 text-sm mb-4">
+                        Register or login to request a free trial period. Experience all features with 30 free song generations — no credit card required!
+                      </p>
+                      <Link
+                        href="/login"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-neon-magenta to-neon-purple hover:from-neon-purple hover:to-neon-cyan text-white font-semibold py-2 px-5 rounded-lg transition-all duration-300 text-sm"
+                      >
+                        <span>Register / Login for Trial</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Trial Promo Link - For logged in users */}
+            {session && (
+              <div className="mb-10">
+                <Link
+                  href="/trial"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-neon-magenta/20 to-neon-purple/20 border border-neon-magenta/40 hover:border-neon-magenta text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 text-sm"
+                >
+                  <Gift className="w-5 h-5 text-neon-magenta" />
+                  <span>Request Free Trial (30 generations)</span>
+                  <span className="text-xs text-neon-magenta font-bold ml-1">LIMITED TIME</span>
+                </Link>
+              </div>
+            )}
 
             <Link
               href={ctaLink}
