@@ -143,3 +143,15 @@ export interface UsageStats {
   trialLimit?: number
   trialEndsAt?: string | null
 }
+
+// Trial request types
+export type TrialRequestStatus = 'pending' | 'approved' | 'rejected'
+
+export interface TrialRequest {
+  id: string
+  user_id: string
+  message: string
+  status: TrialRequestStatus
+  created_at: string
+  updated_at: string
+}

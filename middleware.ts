@@ -17,7 +17,7 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession()
 
   // Define protected routes that require authentication
-  const protectedPaths = ['/create', '/dashboard', '/subscription', '/profile']
+  const protectedPaths = ['/create', '/dashboard', '/subscription', '/profile', '/trial']
 
   const isProtectedRoute = protectedPaths.some(path =>
     req.nextUrl.pathname.startsWith(path)
@@ -40,6 +40,7 @@ export const config = {
     '/create/:path*',
     '/dashboard/:path*',
     '/subscription/:path*',
-    '/profile/:path*'
+    '/profile/:path*',
+    '/trial/:path*'
   ]
 }
