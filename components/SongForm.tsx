@@ -37,7 +37,6 @@ const TEMPOS = [
 ];
 
 const WORD_DENSITIES = [
-  { value: 'extreme-sparse', label: 'Extreme Sparse', description: '2-4 words per line' },
   { value: 'low', label: 'Low', description: '3-6 words per line' },
   { value: 'medium', label: 'Medium', description: '5-10 words per line' },
   { value: 'high', label: 'High', description: '10-15 words per line' },
@@ -193,7 +192,7 @@ export default function SongForm({ onGenerate, isLoading }: SongFormProps) {
           ))}
         </select>
         <p className="text-xs text-gray-400">
-          Controls how many words are used per line in the verses. Extreme sparse uses very few words for powerful impact, while high density creates detailed, elaborate lyrics.
+          Controls how many words are used per line in the verses. Low density uses fewer words for impact, while high density creates detailed, elaborate lyrics.
         </p>
       </div>
 
