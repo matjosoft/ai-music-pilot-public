@@ -42,17 +42,11 @@ Get your API key from: https://console.anthropic.com/
 ```env
 AI_PROVIDER=openai
 OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MODEL=gpt-5-mini
 ```
 
 Get your API key from: https://platform.openai.com/api-keys
 
-**Available OpenAI Models:**
-- `gpt-4-turbo-preview` (recommended)
-- `gpt-4`
-- `gpt-3.5-turbo`
-- `gpt-5-preview` (supports newer API features)
-- `o1`, `o3` (reasoning models)
 
 **Note:** GPT-5 and newer models (o1, o3) automatically use the `max_completion_tokens` parameter instead of `max_tokens`.
 
@@ -68,10 +62,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `AI_PROVIDER` | No | `anthropic` | AI provider to use: `anthropic` or `openai` |
+| `AI_PROVIDER` | No | `openai` | AI provider to use: `anthropic` or `openai` |
 | `ANTHROPIC_API_KEY` | Yes (if using Anthropic) | - | Your Anthropic API key |
 | `OPENAI_API_KEY` | Yes (if using OpenAI) | - | Your OpenAI API key |
-| `OPENAI_MODEL` | No | `gpt-4-turbo-preview` | OpenAI model to use |
+| `OPENAI_MODEL` | No | `gpt-5-mini` | OpenAI model to use |
 | `NEXT_PUBLIC_SUPABASE_URL` | **Yes** | - | Your Supabase project URL (from project settings) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Yes** | - | Your Supabase anonymous key (from project settings) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Yes** | - | Your Supabase service role key - **CRITICAL** for usage tracking and subscriptions |
